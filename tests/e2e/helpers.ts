@@ -30,17 +30,19 @@ export async function dismissDialogues(page: Page): Promise<void> {
 export async function enterRoom(page: Page, character: "m" | "f" = "m", path = "/"): Promise<void> {
   await page.goto(path);
   await expect(page.getByTestId("title-screen")).toBeVisible();
-  // 새 시작 버튼: 진행이 없으면 '관측 시작', 있으면 '처음부터' — 둘 다 start-button
+  // 새 시작 버튼: 진행이 없으면 config.START_LABEL, 있으면 '처음부터' — 둘 다 start-button
   await page.getByTestId("start-button").click();
 
   // 캐릭터 선택 (새 시작 전용 단계)
   await expect(page.getByTestId("char-select")).toBeVisible();
   await page.getByTestId(`char-${character}`).click();
 
-  // 프롤로그 대사 1 (라플라스 — 관측동 도착)
+  // 프롤로그 첫 대사.
+  // ⚠ 여기서 **화자 이름이나 대사 내용을 단언하지 않는다.** 이 헬퍼는 모든 spec이
+  //   물려받는 공용 진입로라, 세계관 문자열을 하나라도 박아 두면 스토리를 고칠 때마다
+  //   전 스위트가 죽는다 (교과를 갈아탈 때 실제로 그랬다). 텍스트 검증은 개별 spec의 몫.
   const dialogue = page.getByTestId("dialogue-box");
   await expect(dialogue).toBeVisible();
-  await expect(dialogue).toContainText("라플라스");
   await dialogue.click();
 
   await expect(page.getByTestId("game-canvas")).toBeVisible();

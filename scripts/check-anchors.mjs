@@ -41,13 +41,22 @@ for (const line of story.split(/\r?\n/)) {
   }
 }
 
+/**
+ * 주석을 지운다 — **주석 속 예시 앵커까지 잡으면 거짓 실패가 난다.**
+ * (`// 예: "#item-…"` 한 줄을 적었다가 빌드가 죽는 일이 실제로 있었다.)
+ * 과하게 지워서 진짜 참조를 놓칠 위험보다, 거짓 실패로 사람을 헤매게 하는 쪽이 나쁘다.
+ */
+const stripComments = (src) =>
+  src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+
 // ── 2. 참조된 앵커: src/ 전체의 "#앵커" 꼴 문자열 리터럴 ──────────────
 const files = walk(join(ROOT, "src")).filter(
   (f) => /\.(ts|json)$/.test(f) && !f.endsWith("story-data.ts")
 );
 const refs = new Map(); // 앵커 → [파일…]
 for (const f of files) {
-  for (const m of readFileSync(f, "utf8").matchAll(/"((?:story\.md)?#[\w-]+)"/g)) {
+  const src = stripComments(readFileSync(f, "utf8"));
+  for (const m of src.matchAll(/"((?:story\.md)?#[\w-]+)"/g)) {
     // CSS 색 리터럴("#fff", "#1a2b3c")은 앵커가 아니다
     if (/^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(m[1])) continue;
     const key = norm(m[1]);

@@ -42,26 +42,65 @@ description: 이 저장소를 다른 교과의 방탈출로 갈아끼운다. 교
 | 3-2 | `docs/curriculum-map.md` | 범위 규칙 절 + 방↔단원 표 + 퍼즐↔성취기준 표(**검증 출처 열 포함**) + `exceptions` 표. 형식은 기존 파일 그대로 |
 | 3-3 | `docs/story.md` | 헤더의 **문법 계약 표는 그대로 두고** 설정·프롤로그·방 섹션만 새로 쓴다. 노트 구분자는 EM DASH(—, U+2014) |
 | 3-4 | `docs/puzzles/room1-overview.md` | 방 슬레이트: 퍼즐 4 + 콘솔 1, 각 퍼즐이 내주는 **코드 조각 배정표**, 봉인 구조(쓸 거면). 형식은 동봉된 `room3-overview.md` |
-| 3-5 | `src/config.ts` | 8개 상수 치환. `index.html`의 `<title>`·og 메타도 함께 (config가 못 닿는 자리) |
+| 3-5 | `src/config.ts` | 상수 치환. `index.html`의 `<title>`·og 메타도 함께 (config가 못 닿는 자리) |
+| 3-6 | `src/maps/<새 방>.ts` | **뼈대 방**(아래 4단계 참조) |
 
 `exceptions` 표를 빼먹지 말 것 — "성취기준과 100% 안 맞아도 되지만 불일치는 명시하고
 승인받는다"는 감사 장치이고, 이게 없으면 매핑이 슬그머니 어긋난다.
 
-## 4. 예제 걷어내기
+**코드 조각 배정표를 짤 때의 함정**: 정답이 건반 순서대로 오름차순이면
+아무 넷이나 순서대로 눌러도 통과한다. **오답 후보를 정답과 섞어** 배치할 것.
 
-산출물이 준비되면 지운다:
-- `src/puzzles/*` 전부, `src/maps/sonic-room.ts`, `src/registry.ts`·`src/maps/index.ts`의 등록
-- `tests/e2e/`의 퍼즐 spec들 (`helpers.ts`·`smoke`·`save`·`search`·`puzzle-layout`은 **남긴다** —
-  좌표와 문구만 새 방에 맞게 고친다)
+## 4. 예제 걷어내기 — 이 목록대로 하지 않으면 컴파일이 안 된다
+
+지우는 것과 **고쳐야 하는 것**이 따로 있다. 아래 순서를 지킨다.
+
+**(1) 지운다**
+- `src/puzzles/*` 전부, `src/maps/sonic-room.ts`
+- `tests/e2e/`의 퍼즐 spec 전부
 - `docs/puzzles/room3-overview.md`, `docs/room3-asset-spec.md`, `assets-src/gen*`의 예제 스프라이트
-- `docs/dev-history.md`는 비우고 새로 시작한다
+- `.claude/agents/physics-reviewer.md` (3-1에서 네 교과판을 만든 뒤에)
+- `docs/dev-history.md`는 비우고 새로 시작
 
-## 5. 마무리
+**(2) 뼈대 방을 먼저 만든다** — 방이 하나도 없으면 `FIRST_ROOM`이 가리킬 것이 없어
+**타입 검사부터 실패한다.** `src/maps/<id>.ts`에 `cols/rows/spawn/walls/blocks`와
+**잠긴 출구 문 하나**만 있는 최소 방을 쓴다. 배경 아트는 나중에 얹는다:
 
-`npm run story && npm run typecheck`가 통과하는지 본다. 이 시점에는 방이 없어 게임이
-돌지 않는 게 정상이다 — 다음은 `add-puzzle` 스킬로 첫 퍼즐을 만드는 것이다.
+```ts
+objects: [{
+  id: "exit-door", name: "<이름> — 출구", tile: [0.8, 10], range: 1.6,
+  interactAnchor: "#sys-door-locked",
+  door: { requiresEvent: "door:<방id>-open", ending: true },
+}]
+```
+
+**(3) 고친다 — 예제를 물고 있는 파일 다섯. 하나라도 빠지면 빌드가 죽는다.**
+
+| 파일 | 무엇을 |
+|---|---|
+| `src/maps/index.ts` | `maps` · `FIRST_ROOM` · `ROOM_CHAIN`을 새 방으로 |
+| `src/registry.ts` | 퍼즐 import 전부 지우고 `puzzles: PuzzleModule[] = []` |
+| `src/main.ts` | ① `initSonicRoomFx` import·호출 삭제 ② 첫 방 인트로 앵커를 새 것으로(`#sn-room-intro` → `#<새 방>-intro`) |
+| `src/data/items.ts` | `ITEMS`를 비운다 — **예제 아이템의 앵커가 남아 있으면 `check-anchors`가 막는다** |
+| `tests/e2e/helpers.ts` | 퍼즐 전용 헬퍼(`enterSonicRoom`·`solve*`·`open*Zone`)를 지운다. 그 아래 범용 헬퍼(`moveTo`·`interact`·`openStation`·`searchAt`·`goDoor`…)는 **그대로 쓴다** |
+
+`smoke`·`save`·`search` spec은 예제 방의 좌표·문구에 묶여 있다. 새 방에 노트·수색 지점이
+생기기 전까지는 **지우거나 보류**하고, `/add-puzzle`로 방을 채우면서 다시 쓴다.
+`puzzle-layout.spec.ts`만 방과 무관하므로 그대로 둔다.
+
+## 5. 마무리 — 여기까지가 통과 기준이다
+
+```bash
+bash scripts/verify.sh quick
+```
+
+story → 앵커 → 근접 판정 → 타입 검사 → 빌드가 **전부 그린이어야 한다.**
+그리고 `npm run assets && npm run dev`로 **빈 방을 실제로 걸어 다녀 보고**,
+출구에서 잠김 대사가 뜨는지 확인한다. 여기까지 되면 뼈대가 선 것이다.
+
 사용자에게 다음 한 줄을 안내한다:
-> "이제 `/add-puzzle`로 첫 퍼즐을 만듭니다. 방 배경 아트가 필요하면 `/gen-image-asset`."
+> "뼈대가 섰습니다. 이제 `/add-puzzle`로 첫 퍼즐을 만듭니다.
+> 방 배경 아트가 필요하면 `/gen-image-asset`."
 
 ## 하지 않는 것
 
