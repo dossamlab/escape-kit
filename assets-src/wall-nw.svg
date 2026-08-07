@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="128" viewBox="0 0 64 128">
+  <!-- 뒷벽 NW 세그먼트 (x=0 열의 바깥 변 W→N 위에 세움) — 프리스큐 평행사변형.
+       베이스: (0,128)→(64,96), 상단: (0,32)→(64,0). NE보다 어두운 면 (광원 방향 차). -->
+  <path d="M 0 128 L 64 96 L 64 0 L 0 32 Z" fill="{{color.wall-nw}}" />
+  <!-- 상단 몰딩(천장선) -->
+  <path d="M 0 32 L 64 0 L 64 8 L 0 40 Z" fill="{{color.wall-top}}" />
+  <!-- 페인트 투톤 경계선 (허리 몰딩) -->
+  <path d="M 0 90 L 64 58" stroke="{{color.wall-top}}" stroke-width="2" fill="none" opacity="0.6" />
+  <!-- 걸레받이 -->
+  <path d="M 0 118 L 64 86 L 64 96 L 0 128 Z" fill="{{color.baseboard}}" />
+</svg>

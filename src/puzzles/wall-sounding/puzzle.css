@@ -1,0 +1,145 @@
+/* P2 벽면 탐상 — 그리드 청진 탭 (색은 design-tokens 주입 CSS 변수만) */
+.knock-root {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 0.8rem;
+  align-items: center;
+}
+@media (max-width: 640px) {
+  .knock-root {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.knock-grid {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  height: min(46vh, 380px);
+  padding: 6px;
+  border: var(--stroke-outline) solid var(--color-line);
+  border-radius: var(--corner-radius);
+  background: color-mix(in srgb, var(--color-bg-deep) 80%, black);
+}
+@media (max-width: 640px) {
+  .knock-grid {
+    height: min(32vh, 240px);
+  }
+}
+
+.knock-panel {
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid var(--color-line);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--color-line) 18%, transparent);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
+}
+.knock-panel:active {
+  background: color-mix(in srgb, var(--color-text) 25%, transparent);
+}
+/* 이미 두드린 패널 — 전수 노크의 진행을 추적하게 살짝 어둡게 */
+.knock-panel.knocked {
+  background: color-mix(in srgb, var(--color-line) 8%, transparent);
+}
+/* 빈 패널 발견 — 하이라이트 (재탭 = 벽감 열기) */
+.knock-panel.hollow {
+  border-color: var(--color-hologram);
+  background: color-mix(in srgb, var(--color-hologram) 22%, transparent);
+  box-shadow: 0 0 var(--glow-blur) color-mix(in srgb, var(--color-hologram) 60%, transparent);
+}
+/* 벽감 개방 — 뒤가 뚫린 어두운 구멍 */
+.knock-panel.opened {
+  border-color: var(--color-success);
+  background: color-mix(in srgb, var(--color-bg-deep) 40%, black);
+  box-shadow: inset 0 0 10px black,
+    0 0 var(--glow-blur) color-mix(in srgb, var(--color-success) 50%, transparent);
+}
+
+.knock-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.knock-scope {
+  width: 100%;
+  max-height: 26vh;
+  background: color-mix(in srgb, var(--color-bg-deep) 70%, black);
+  border-radius: var(--corner-radius);
+}
+.knock-scope-frame {
+  fill: none;
+  stroke: var(--color-line);
+  stroke-width: 2;
+}
+.knock-scope-baseline {
+  stroke: var(--color-line);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  opacity: 0.6;
+}
+.knock-wave {
+  fill: none;
+  stroke: var(--color-hologram);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+/* 이중 에코 파형 — 찾았다는 신호는 성공색 */
+.knock-wave.double {
+  stroke: var(--color-success);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--color-success) 60%, transparent));
+}
+.knock-echo-mark line {
+  stroke: var(--color-success);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+.knock-echo-mark text {
+  fill: var(--color-success);
+  font-size: 11px;
+}
+
+.knock-state {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  min-height: 2.4em;
+}
+.knock-state[data-level="warm"] {
+  color: var(--color-hologram);
+}
+.knock-state[data-level="ok"] {
+  color: var(--color-success);
+}
+
+.knock-open {
+  min-height: 48px;
+  border: var(--stroke-outline) solid var(--color-line);
+  border-radius: var(--corner-radius);
+  background: color-mix(in srgb, var(--color-hologram) 8%, transparent);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 1rem;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s, opacity 0.12s;
+}
+.knock-open:not(:disabled) {
+  border-color: var(--color-hologram);
+  background: color-mix(in srgb, var(--color-hologram) 22%, transparent);
+  box-shadow: 0 0 var(--glow-blur) color-mix(in srgb, var(--color-hologram) 60%, transparent);
+}
+.knock-open:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.knock-done {
+  border: 1px solid var(--color-success);
+  border-radius: var(--corner-radius);
+  color: var(--color-success);
+  padding: 0.5rem 0.7rem;
+  font-size: 0.9rem;
+}

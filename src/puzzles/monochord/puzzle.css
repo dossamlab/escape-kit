@@ -1,0 +1,121 @@
+/* P4 모노코드 — 현 위 지점 탭 (하모닉스) */
+.mono-root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.mono-sign-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+.mono-sign {
+  margin: 0;
+  flex: 1;
+  font-size: 0.92rem;
+  color: var(--color-hologram);
+}
+.mono-target {
+  border: var(--stroke-outline) solid var(--color-line);
+  border-radius: var(--corner-radius);
+  background: color-mix(in srgb, var(--color-hologram) 8%, transparent);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 0.85rem;
+  padding: 0.45rem 0.7rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+.mono-target.played {
+  border-color: var(--color-hologram);
+  box-shadow: 0 0 var(--glow-blur) color-mix(in srgb, var(--color-hologram) 55%, transparent);
+}
+
+.mono-svg {
+  width: 100%;
+  max-height: 32vh;
+  cursor: pointer;
+}
+.mono-body {
+  fill: color-mix(in srgb, var(--color-bg-deep) 82%, var(--color-hologram));
+  stroke: var(--color-line);
+  stroke-width: 2;
+}
+.mono-bridge {
+  fill: var(--color-line);
+}
+.mono-string {
+  stroke: var(--color-text);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+.mono-wave {
+  fill: none;
+  stroke: var(--color-hologram);
+  stroke-width: 2;
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--color-hologram) 60%, transparent));
+}
+.mono-node-dot {
+  fill: var(--color-success);
+  stroke: var(--color-bg-deep);
+  stroke-width: 1;
+}
+.mono-finger {
+  fill: color-mix(in srgb, var(--color-hologram) 35%, transparent);
+  stroke: var(--color-hologram);
+  stroke-width: 2;
+}
+
+.mono-lamps {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.mono-lamp {
+  border: 1px solid var(--color-line);
+  border-radius: var(--corner-radius);
+  padding: 0.25rem 0.55rem;
+  font-size: 0.8rem;
+  color: color-mix(in srgb, var(--color-text) 45%, transparent);
+  transition: color 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.mono-lamp.lit {
+  color: var(--color-hologram);
+  border-color: var(--color-hologram);
+  box-shadow: 0 0 var(--glow-blur) color-mix(in srgb, var(--color-hologram) 50%, transparent);
+}
+.mono-mute {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--color-danger);
+}
+
+.mono-state {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  min-height: 1.3em;
+}
+.mono-state[data-level="warm"] {
+  color: var(--color-hologram);
+}
+.mono-state[data-level="ok"] {
+  color: var(--color-success);
+}
+
+.mono-caption {
+  margin: 0;
+  font-size: 0.74rem;
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+}
+
+.mono-done {
+  border: 1px solid var(--color-success);
+  border-radius: var(--corner-radius);
+  color: var(--color-success);
+  padding: 0.5rem 0.7rem;
+  font-size: 0.9rem;
+}

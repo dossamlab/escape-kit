@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="128" viewBox="0 0 64 128">
+  <!-- 뒷벽 NE 세그먼트 (y=0 행의 바깥 변 N→E 위에 세움) — 프리스큐 평행사변형.
+       베이스: (0,96)→(64,128), 상단: (0,0)→(64,32). 콘크리트 페인트 + 걸레받이. -->
+  <path d="M 0 96 L 64 128 L 64 32 L 0 0 Z" fill="{{color.wall-ne}}" />
+  <!-- 상단 몰딩(천장선) -->
+  <path d="M 0 0 L 64 32 L 64 40 L 0 8 Z" fill="{{color.wall-top}}" />
+  <!-- 페인트 투톤 경계선 (허리 몰딩) -->
+  <path d="M 0 58 L 64 90" stroke="{{color.wall-top}}" stroke-width="2" fill="none" opacity="0.6" />
+  <!-- 걸레받이 -->
+  <path d="M 0 86 L 64 118 L 64 128 L 0 96 Z" fill="{{color.baseboard}}" />
+</svg>

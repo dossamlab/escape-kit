@@ -1,0 +1,63 @@
+﻿{
+  "id": "sonic-console",
+  "title": "녹음 콘솔 — 최종 기록 판독",
+  "act": 1,
+  "concept": "도플러 효과",
+  "curriculum": {
+    "과목": "역학과 에너지",
+    "단원": "탄성파와 소리",
+    "성취기준": "[12역학03-03] 도플러 효과를 이해하고 물체의 속도 측정 등 다양한 장치에 이용됨을 설명할 수 있다"
+  },
+  "narrative": {
+    "intro": "story.md#sn-console-intro",
+    "clear": "story.md#sn-console-clear",
+    "extra": {
+      "wrong": "story.md#sn-console-wrong"
+    },
+    "notes": []
+  },
+  "trigger": {
+    "map": "sonic-room",
+    "objectId": "sonic-console"
+  },
+  "reward": {
+    "event": "door:sonic-open"
+  },
+  "testIds": {
+    "root": "puzzle-doppler",
+    "solveCheck": "doppler-read"
+  },
+  "gate": {
+    "code": "1365",
+    "keys": [
+      { "value": "1", "label": "도", "freq": 261.63 },
+      { "value": "2", "label": "레", "freq": 293.66 },
+      { "value": "3", "label": "미", "freq": 329.63 },
+      { "value": "4", "label": "파", "freq": 349.23 },
+      { "value": "5", "label": "솔", "freq": 392.0 },
+      { "value": "6", "label": "라", "freq": 440.0 },
+      { "value": "7", "label": "시", "freq": 493.88 },
+      { "value": "8", "label": "도′", "freq": 523.25 }
+    ],
+    "items": ["reel-tape"],
+    "itemsMissingAnchor": "#gate-sonic-notape",
+    "lockedAnchor": "#gate-sonic-locked",
+    "promptAnchor": "#gate-sonic-prompt",
+    "wrongAnchor": "#gate-sonic-wrong",
+    "openAnchor": "#sn-tape-voice"
+  },
+  "principle": [
+    "파원이 움직이면 파장이 변한다 — 다가오는 파원은 앞의 파를 눌러 촘촘하게(높은 음), 멀어지는 파원은 뒤로 늘려 성기게(낮은 음) 만든다. 도플러 효과다.",
+    "관측자가 듣는 진동수: 다가올 때 f′ = f·v/(v−vs) > f, 멀어질 때 f′ = f·v/(v+vs) < f. 구급차가 스쳐 지나가는 순간 음이 뚝 떨어지는 이유.",
+    "속도를 재는 도구가 전부 이 식이다 — 야구장 스피드건, 과속 단속 레이더, 혈류 초음파, 그리고 멀어지는 은하의 적색편이까지.",
+    "등속이면 그 차이는 일정하다 — 다가오는 내내 높은 채로, 멀어지는 내내 낮은 채로. 음이 계속 미끄러진다면 방향이 아니라 속력이 변하고 있다는 뜻이다.",
+    "지오폰의 마지막 기록: 휘파람 4음이 내내 원음 아래였고(멀어짐), 게다가 계속 더 내려갔다(멀어지는 속력이 커짐).",
+    "그 휘파람의 주인은 붕괴에 휩쓸린 게 아니라 제 발로 떠났다 — 그것도 점점 빠르게. 물리가 준 서사의 답 — 판독 '멀어지며 빨라짐'.",
+    "멜로디 도·미·라·솔은 장치 넷이 하나씩 내준 음이다 — 잊었다면 각 원리 카드 마지막 줄."
+  ],
+  "hints": [
+    "점선이 원음이다. 실선이 그 위인가 아래인가 — 방향은 그것으로 끝난다.",
+    "속도까지 읽으려면 둘 사이의 간격을 보라. 등속이면 간격이 일정해 실선이 수평이다.",
+    "이 기록은 내내 점선 아래이고(멀어짐), 간격이 갈수록 벌어진다(멀어지는 속력이 커짐)."
+  ]
+}

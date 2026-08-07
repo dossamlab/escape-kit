@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <!-- 공통 프리미티브 부품 — 모든 에셋은 이 부품 조합 + 최소한의 고유 형상으로 제작.
+       빌드 시 각 에셋 SVG의 <defs>로 주입되며, <use href="#부품id">로 사용한다.
+       색은 color 토큰 플레이스홀더만 사용 (hex 하드코딩은 훅이 차단). -->
+  <defs>
+    <!-- 아이소메트릭 타일 바닥 (2:1 마름모, {{tile.w}}×{{tile.h}}) -->
+    <path id="iso-tile-base"
+          d="M {{tile.w}} 0 L 0 0 M 64 0 L 128 32 L 64 64 L 0 32 Z"
+          transform="translate(0,0)" />
+    <path id="iso-tile-diamond" d="M 64 0 L 128 32 L 64 64 L 0 32 Z" />
+
+    <!-- 발광 외곽선 필터 (blur {{stroke.glow-blur}}) -->
+    <filter id="glow-outline" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="{{stroke.glow-blur}}" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <!-- 청사진 홀로그램 UI 프레임 (모서리 브래킷) -->
+    <g id="holo-frame" fill="none" stroke="{{color.hologram}}" stroke-width="{{stroke.outline}}">
+      <path d="M 0 12 L 0 0 L 12 0" />
+      <path d="M 52 0 L 64 0 L 64 12" />
+      <path d="M 64 52 L 64 64 L 52 64" />
+      <path d="M 12 64 L 0 64 L 0 52" />
+    </g>
+
+    <!-- 콘솔/기기 몸체 패널 (라운드 {{corner-radius}}) -->
+    <rect id="panel" width="64" height="40" rx="{{corner-radius}}"
+          fill="{{color.tile-a}}" stroke="{{color.line}}" stroke-width="{{stroke.outline}}" />
+  </defs>
+</svg>

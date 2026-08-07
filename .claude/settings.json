@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \".claude/hooks/palette-guard.mjs\""
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \".claude/hooks/session-brief.mjs\"",
+            "timeout": 15,
+            "statusMessage": "프로젝트 브리핑 주입 중"
+          }
+        ]
+      }
+    ]
+  }
+}

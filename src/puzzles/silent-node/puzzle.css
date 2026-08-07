@@ -1,0 +1,100 @@
+/* P3 무음 지점 — 상쇄 인서트 모달 + 방 수준 HUD 소음 미터(roomfx) */
+.node-root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  align-items: stretch;
+}
+
+.node-canvas {
+  width: 100%;
+  max-height: 38vh;
+  border: 1px solid var(--color-line);
+  border-radius: var(--corner-radius);
+  background: color-mix(in srgb, var(--color-bg-deep) 85%, black);
+}
+
+.node-caption {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--color-text);
+}
+.node-caption.ok {
+  color: var(--color-success);
+}
+
+/* 주입 신호 드래그 대상 — 끌 수 있음을 커서로도 알린다 (touch-action은 onDrag가 지정) */
+.node-canvas {
+  cursor: ew-resize;
+}
+
+.node-switch {
+  min-height: 52px;
+  border: var(--stroke-outline) solid var(--color-danger);
+  border-radius: var(--corner-radius);
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 1.05rem;
+  cursor: pointer;
+}
+.node-switch:active {
+  background: color-mix(in srgb, var(--color-danger) 28%, transparent);
+}
+.node-switch:disabled {
+  opacity: 0.5;
+  cursor: default;
+  border-color: var(--color-line);
+}
+
+.node-done {
+  border: 1px solid var(--color-success);
+  border-radius: var(--corner-radius);
+  color: var(--color-success);
+  padding: 0.5rem 0.7rem;
+  font-size: 0.9rem;
+}
+
+/* ── HUD 소음 미터 (roomfx — 경보 활성 중 상시 표시) ── */
+/* display:flex가 hidden 속성의 기본 display:none을 덮지 않게 — 필수 */
+.noise-meter[hidden] {
+  display: none;
+}
+.noise-meter {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: max(14px, env(safe-area-inset-top));
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--corner-radius);
+  background: color-mix(in srgb, var(--color-bg-deep) 82%, transparent);
+  pointer-events: none;
+  z-index: 30;
+}
+.noise-meter-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  color: var(--color-text);
+}
+.noise-meter-bar {
+  width: 120px;
+  height: 10px;
+  border: 1px solid var(--color-line);
+  border-radius: 5px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--color-bg-deep) 70%, black);
+}
+.noise-meter-fill {
+  height: 100%;
+  width: 0;
+  background: var(--color-danger);
+  transition: width 0.1s linear;
+}
+.noise-meter-fill.quiet {
+  background: var(--color-success);
+}

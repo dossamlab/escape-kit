@@ -1,0 +1,1077 @@
+/* 색·치수 값은 main.ts가 design-tokens.json에서 읽어 :root CSS 변수로 주입한다.
+   이 파일에는 hex를 직접 쓰지 않는다 (토큰 단일 소스 원칙). */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 전정 감각 배려: 모션 최소화 선호 시 장식 애니메이션 정지 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* 본문 글씨를 살짝 키운다(16 → 17px, +6 %). rem 기반이라 명판·문구·버튼이 함께 커진다.
+   퍼즐 제목만 예외로 vw에 묶어 두 줄로 접히지 않게 한다(.puzzle-title 참조). */
+html {
+  font-size: 106.25%;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-bg-deep);
+  color: var(--color-text);
+  font-family: var(--font-family);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+#app {
+  position: relative;
+  height: 100%;
+}
+
+/* ── 타이틀 화면 ─────────────────────────────── */
+.title-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)),
+    repeating-linear-gradient(0deg, transparent 0 63px, var(--color-tile-b) 63px 64px),
+    repeating-linear-gradient(90deg, transparent 0 63px, var(--color-tile-b) 63px 64px),
+    var(--color-bg-deep);
+}
+
+.title-sub {
+  color: var(--color-hologram);
+  letter-spacing: var(--font-holo-letter-spacing);
+  font-size: clamp(0.7rem, 2vw, 0.9rem);
+  text-transform: uppercase;
+}
+
+.title-main {
+  color: var(--color-text);
+  font-size: clamp(1.8rem, 6vw, 3.5rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-shadow: 0 0 var(--glow-blur) var(--color-hologram);
+}
+
+.title-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+.title-start {
+  border: var(--stroke-outline) solid var(--color-hologram);
+  border-radius: var(--corner-radius);
+  background: transparent;
+  color: var(--color-hologram);
+  font-family: inherit;
+  font-size: 1rem;
+  letter-spacing: var(--font-holo-letter-spacing);
+  padding: 0.9rem 2.4rem;
+  cursor: pointer;
+  min-height: 44px; /* 모바일 터치 타깃 */
+  text-shadow: 0 0 var(--glow-blur) var(--color-hologram);
+  box-shadow: 0 0 var(--glow-blur) color-mix(in srgb, var(--color-hologram) 40%, transparent);
+  transition: background 0.2s;
+}
+.title-start:hover,
+.title-start:active {
+  background: color-mix(in srgb, var(--color-hologram) 15%, transparent);
+}
+
+/* ── 타이틀 크레딧·문의하기 ─────────────────── */
+.title-footer {
+  position: absolute;
+  bottom: max(0.8rem, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.title-credit {
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+}
+
+.title-contact {
+  background: transparent;
+  border: none;
+  color: var(--color-hologram);
+  font-family: inherit;
+  font-size: 0.8rem;
+  letter-spacing: var(--font-holo-letter-spacing);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  padding: 0.5rem 0.8rem; /* 모바일 터치 타깃 확보 */
+}
+
+.contact-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.contact-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  width: min(460px, calc(100% - 2rem));
+  max-height: calc(100% - 2rem);
+  overflow-y: auto;
+  border: var(--stroke-outline) solid var(--color-hologram);
+  border-radius: var(--corner-radius);
+  background: var(--color-bg-deep);
+  padding: 1.1rem 1.3rem;
+  box-shadow: 0 0 var(--glow-blur) color-mix(in srgb, var(--color-hologram) 40%, transparent);
+}
+
+.contact-title {
+  color: var(--color-hologram);
+  letter-spacing: var(--font-holo-letter-spacing);
+  font-size: 1rem;
+}
+
+.contact-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.contact-radio {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text);
+  font-size: 0.9rem;
+  cursor: pointer;
+  min-height: 32px; /* 모바일 터치 타깃 */
+}
+
+.contact-radio input {
+  accent-color: var(--color-hologram);
+  width: 1rem;
+  height: 1rem;
+}
+
+.contact-textarea {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid color-mix(in srgb, var(--color-hologram) 50%, transparent);
+  border-radius: var(--corner-radius);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  padding: 0.6rem 0.7rem;
+  resize: vertical;
+  min-height: 100px;
+}
+
+.contact-textarea:focus {
+  outline: none;
+  border-color: var(--color-hologram);
+}
+
+.contact-status {
+  min-height: 1.2em;
+  font-size: 0.8rem;
+  color: var(--color-hologram);
+}
+
+.contact-actions {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: flex-end;
+}
+
+.contact-btn {
+  padding: 0.6rem 1.4rem;
+  font-size: 0.9rem;
+}
+
+.contact-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ── 캐릭터 선택 ─────────────────────────────── */
+.char-select {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  background: var(--color-bg-deep);
+  z-index: 150;
+}
+
+.char-select-row {
+  display: flex;
+  gap: 2.5rem;
+}
+
+.char-select-btn {
+  width: 132px;
+  height: 172px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--stroke-outline) solid var(--color-line);
+  border-radius: var(--corner-radius);
+  background: color-mix(in srgb, var(--color-hologram) 6%, transparent);
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.char-select-btn:hover,
+.char-select-btn:focus-visible {
+  border-color: var(--color-hologram);
+  box-shadow: 0 0 var(--glow-blur) color-mix(in srgb, var(--color-hologram) 50%, transparent);
+}
+.char-select-btn img {
+  width: 84px;
+  image-rendering: pixelated;
+}
+
+/* ── 내러티브 대사 박스 (홀로그램 프레임) ────── */
+.dialogue-box {
+  position: absolute;
+  left: 50%;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: min(680px, calc(100% - 32px));
+  border: var(--stroke-outline) solid var(--color-hologram);
+  border-radius: var(--corner-radius);
+  background: color-mix(in srgb, var(--color-bg-deep) 88%, var(--color-hologram));
+  box-shadow: 0 0 var(--glow-blur) color-mix(in srgb, var(--color-hologram) 50%, transparent);
+  padding: 1rem 1.2rem;
+  cursor: pointer;
+  z-index: 100;
+}
+
+.dialogue-speaker {
+  color: var(--color-hologram);
+  letter-spacing: var(--font-holo-letter-spacing);
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.dialogue-text {
+  line-height: 1.7;
+  font-size: 0.95rem;
+  white-space: pre-line; /* story-data의 \n(연출 지문/문단)을 줄바꿈으로 표시 */
+}
+
+.dialogue-hint {
+  text-align: right;
+  color: var(--color-line);
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  animation: dialogue-blink 1.2s infinite;
+}
+
+@keyframes dialogue-blink {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+/* ── 게임 화면 ─────────────────────────────── */
+.game-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+.game-ui {
+  position: absolute;
+  inset: 0;
+  pointer-events: none; /* 자식에서 개별적으로 되살림 */
+}
+.game-ui .dialogue-box {
+  pointer-events: auto;
+}
+
+.interact-label {
+  position: absolute;
+  transform: translate(-50%, -130%);
+  color: var(--color-text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  text-shadow: 0 1px 4px var(--color-bg-deep);
+}
+
+/* ── 퍼즐 오버레이 (홀로그램 프레임) ─────────── */
+.puzzle-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-bg-deep) 55%, transparent);
+  pointer-events: auto;
+  z-index: 50;
+}
+
+/* 세로 flex — 제목·닫기(✕)·힌트 바는 제자리에 두고 가운데 .puzzle-scroll만 스크롤한다.
+   예전엔 프레임 자신이 overflow-y: auto라 absolute인 .puzzle-close가 콘텐츠에 딸려
+   위로 사라졌다. 모바일에서 아래로 내리면 나가는 버튼이 화면 밖이었다. */
+.puzzle-frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(760px, calc(100% - 24px));
+  max-height: calc(100% - 24px);
+  overflow: hidden;
+  border: var(--stroke-outline) solid var(--color-hologram);
+  border-radius: var(--corner-radius);
+  background: color-mix(in srgb, var(--color-bg-deep) 92%, var(--color-hologram));
+  box-shadow: 0 0 calc(var(--glow-blur) * 2) color-mix(in srgb, var(--color-hologram) 45%, transparent);
+  padding: 0.9rem 1rem 1rem;
+}
+
+/* 해결 직후 자동 닫힘 대기 동안 추가 조작 차단 + 완료 강조 */
+.puzzle-overlay.solved {
+  pointer-events: none;
+}
+.puzzle-overlay.solved .puzzle-frame {
+  border-color: var(--color-success);
+  box-shadow: 0 0 calc(var(--glow-blur) * 2) color-mix(in srgb, var(--color-success) 55%, transparent);
+}
+
+.puzzle-frame.danger-flash {
+  animation: danger-flash 0.5s ease-out;
+}
+@keyframes danger-flash {
+  0%, 60% { border-color: var(--color-danger); box-shadow: 0 0 calc(var(--glow-blur) * 2) var(--color-danger); }
+  100% { border-color: var(--color-hologram); }
+}
+
+/* 제목 줄이 닫기(✕) 버튼의 **세로 자리까지** 차지하게 한다.
+   padding-right만으로는 제목 글자만 비켜설 뿐, 제목이 한 줄(≈14px)이라
+   그 아래 .puzzle-body의 우상단(명판 등)이 버튼(top 8 + 44 = 52px) 밑으로 파고든다.
+   min-height로 버튼 높이를 확보하면 본문이 구조적으로 겹칠 수 없다. */
+.puzzle-title {
+  flex: 0 0 auto;
+  color: var(--color-hologram);
+  /* 가장 긴 제목이 21자다("궤도 성형 테이블 — 중계 위성 동기화"). 홀로그램 자간이 넓어
+     좁은 화면에서 두 줄로 접혔다 — 한 줄로 못 박고 폭에 맞춰 자간·크기를 줄인다.
+     넘치면 프레임의 overflow: hidden이 자르므로 아래 spec이 한 줄·미절단을 검산한다. */
+  white-space: nowrap;
+  letter-spacing: clamp(0.02em, 0.55vw, var(--font-holo-letter-spacing));
+  font-size: clamp(0.62rem, 3.05vw, 0.85rem);
+  margin-bottom: 0.6rem;
+  padding-right: 48px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+/* 유일한 스크롤러. min-height: 0이 없으면 flex 아이템의 자동 최소 크기 때문에
+   프레임이 콘텐츠만큼 늘어나려 들어 스크롤이 아예 안 생긴다. */
+.puzzle-scroll {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* "아래 더 있음" 안내 — 프레임 배경색과 같은 식이라야 이어져 보인다(.puzzle-frame과 동일).
+   margin-top으로 자기 높이를 상쇄하지 않으면 이 요소가 스크롤을 만들어 안내가 자기 자신을
+   가리키는 꼴이 된다. 전역 prefers-reduced-motion 킬스위치가 transition을 알아서 죽인다. */
+.puzzle-scroll-more {
+  position: sticky;
+  bottom: 0;
+  /* 퍼즐이 자기 sticky 바를 하단에 두는 경우가 있다(entropy-console의 판정 바,
+     centrifuge-dial의 과속 경보 — z-index: 1). 호스트가 주는 "더 있음" 안내는
+     그보다 위에 있어야 한다. 안 그러면 스크롤이 남았는데 안내만 가려진다. */
+  z-index: 2;
+  height: 34px;
+  margin-top: -34px;
+  /* ▾ 글리프의 디센더가 34px 상자를 2px 넘어서 전 퍼즐에 2px짜리 유령 스크롤을
+     만들고 있었다(본문이 빈 퍼즐에서도 scrollHeight 2가 찍혔다). 잘라낸다. */
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.18s ease-out;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  color: var(--color-hologram);
+  font-size: 0.8rem;
+  line-height: 1;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--color-bg-deep) 92%, var(--color-hologram)),
+    transparent
+  );
+}
+.puzzle-scroll-more::after {
+  content: "▾";
+}
+.puzzle-scroll-more.on {
+  opacity: 1;
+}
+
+.puzzle-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 44px;
+  height: 44px;
+  border: var(--stroke-outline) solid var(--color-line);
+  border-radius: var(--corner-radius);
+  background: transparent;
+  color: var(--color-text);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* 퍼즐의 상태 한 줄(경보·판정 문구)을 스크롤 바닥에 붙든다.
+   조작부가 커서 상태 문구가 화면 밖으로 밀리는 퍼즐이 다섯 있었다(실플레이 제보) —
+   "구조 응력 초과", "궤도가 도킹 축을 벗어남" 같은 **놓치면 안 되는 줄**이다.
+   퍼즐이 자기 <prefix>-state 요소에 이 클래스를 같이 붙여 쓴다.
+
+   배경은 .puzzle-frame과 같은 식이라 스크롤이 없을 땐 눈에 띄지 않는다(일반 흐름 그대로).
+   z-index는 호스트의 "더 있음" 페이드(2)보다 위 — 페이드가 덮으면 경고가 흐려져
+   붙들어 둔 의미가 없다. */
+.puzzle-status {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  padding: 0.25rem 0;
+  background: color-mix(in srgb, var(--color-bg-deep) 92%, var(--color-hologram));
+}
+
+/* 스크롤러 밖 — 힌트 버튼은 언제나 손에 닿는다. 힌트를 다 펼치면 목록이 길어지므로
+   바 자체에 상한과 스크롤을 줘서 본문 자리를 다 먹지 않게 한다. */
+.puzzle-hint-bar {
+  display: flex;
+  flex-direction: column;
+  /* 0 0 auto — 줄어들면 버튼이 바 안쪽으로 잘려 들어간다(400×645에서 16px 실측).
+     본문(.puzzle-scroll)이 flex:1이라 남는 자리는 그쪽이 가져간다. */
+  flex: 0 0 auto;
+  overflow: hidden;
+  max-height: 40%;
+  margin-top: 0.8rem;
+  border-top: 1px solid var(--color-line);
+  padding-top: 0.7rem;
+}
+/* 버튼이 하나도 없는 퍼즐에선 빈 구분선만 남으므로 통째로 감춘다 */
+.puzzle-hint-bar:not(:has(button)) {
+  display: none;
+}
+
+/* 힌트 버튼 + 퍼즐 주 버튼(.puzzle-actions)이 서는 한 줄 */
+.puzzle-bar-row {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+/* 버튼 하나만 넣는 퍼즐도, 버튼+상태 문구를 넣는 퍼즐도 받는다.
+   min-width:0 이라야 긴 문구가 줄바꿈된다(맨 auto면 트랙을 밀어낸다). */
+.puzzle-actions {
+  display: flex;
+  /* basis 0 — auto면 문구의 max-content가 기준이라 줄바꿈(wrap)이 먼저 일어나
+     힌트 버튼 아래로 떨어진다. 0이면 줄바꿈 대신 안에서 줄이 접힌다. */
+  flex: 1 1 0;
+  min-width: 0;
+  align-items: center;
+  gap: 0.5rem;
+}
+.puzzle-actions:empty {
+  display: none;
+}
+
+.puzzle-hint-button {
+  min-height: 40px;
+  padding: 0.35rem 1.1rem;
+  border: 1px solid var(--color-success);
+  border-radius: var(--corner-radius);
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+  color: var(--color-success);
+  font-family: inherit;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+.puzzle-hint-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.puzzle-hint-list {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto; /* 힌트를 다 펼쳐도 스크롤은 목록만 — 버튼 줄은 제자리 */
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+
+.puzzle-hint-item {
+  color: var(--color-text);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+/* ── 연구노트 오버레이 + 수집 카운터 ─────────── */
+.note-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-bg-deep) 55%, transparent);
+  pointer-events: auto;
+  z-index: 80; /* 저널(70) 위에서 재열람 */
+}
+
+.note-panel {
+  width: min(560px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+  overflow-y: auto;
+  border: var(--stroke-outline) solid var(--color-success);
+  border-radius: var(--corner-radius);
+  background: color-mix(in srgb, var(--color-bg-deep) 90%, var(--color-success));
+  box-shadow: 0 0 calc(var(--glow-blur) * 2) color-mix(in srgb, var(--color-success) 35%, transparent);
+  padding: 1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.note-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.note-title {
+  color: var(--color-success);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.note-badge {
+  border: 1px solid var(--color-danger);
+  border-radius: var(--corner-radius);
+  color: var(--color-danger);
+  font-size: 0.72rem;
+  padding: 0.15rem 0.5rem;
+  letter-spacing: 0.08em;
+}
+
+.note-body {
+  line-height: 1.8;
+  font-size: 0.92rem;
+  white-space: pre-line;
+}
+
+/* 닫기 버튼 줄 — 키 안내를 버튼 왼쪽에 나란히 */
+.overlay-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.7rem;
+}
+
+.overlay-hint {
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+}
+
+.note-close {
+  align-self: flex-end;
+  min-height: 44px;
+  padding: 0.4rem 1.4rem;
+  border: var(--stroke-outline) solid var(--color-line);
+  border-radius: var(--corner-radius);
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.note-counter {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top));
+  right: 12px;
+  color: var(--color-success);
+  font-size: 0.8rem;
+  letter-spacing: 0.15em;
+  text-shadow: 0 0 var(--glow-blur) color-mix(in srgb, var(--color-success) 60%, transparent);
+  pointer-events: auto;
+  cursor: pointer;
+  background: color-mix(in srgb, var(--color-bg-deep) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-success) 40%, transparent);
+  border-radius: var(--corner-radius);
+  padding: 0.4rem 0.7rem;
+  font-family: inherit;
+  min-height: 40px;
+}
+
+/* ── 연구노트 저널 ─────────────────────────── */
+.journal-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-bg-deep) 55%, transparent);
+  pointer-events: auto;
+  z-index: 70;
+}
+
+.journal-panel {
+  width: min(520px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+  overflow-y: auto;
+  border: var(--stroke-outline) solid var(--color-success);
+  border-radius: var(--corner-radius);
+  background: color-mix(in srgb, var(--color-bg-deep) 92%, var(--color-success));
+  box-shadow: 0 0 calc(var(--glow-blur) * 2) color-mix(in srgb, var(--color-success) 30%, transparent);
+  padding: 1rem 1.1rem;
+}
+
+.journal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.8rem;
+}
+
+.journal-title {
+  color: var(--color-success);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.journal-close {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--corner-radius);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.journal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* display: flex가 hidden 속성(UA display: none)을 이기므로 탭 전환용으로 명시 */
+.journal-list[hidden] {
+  display: none;
+}
+
+.journal-item {
+  text-align: left;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--corner-radius);
+  background: color-mix(in srgb, var(--color-bg-deep) 80%, transparent);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  min-height: 44px;
+}
+.journal-item:disabled {
+  opacity: 0.4;
+  cursor: default;
+  color: var(--color-line);
+}
+.journal-item:not(:disabled):hover {
+  border-color: var(--color-success);
+}
+
+/* 저널 탭 — 연구노트 / 원리 카드 */
+.journal-tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.8rem;
+}
+
+.journal-tab {
+  flex: 1;
+  min-height: 40px;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--corner-radius);
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-hologram);
+  font-family: inherit;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+.journal-tab.active {
+  border-color: var(--color-success);
+  color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 12%, transparent);
+}
+
+/* 원리 카드 본문 — 한 줄 = 수식 또는 개념 문장 */
+.principle-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  line-height: 1.7;
+  font-size: 0.92rem;
+}
+.principle-list li::marker {
+  color: var(--color-success);
+}
+
+.mute-button {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top));
+  left: 12px;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--corner-radius);
+  background: color-mix(in srgb, var(--color-bg-deep) 70%, transparent);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  pointer-events: auto;
+  /* 모달(퍼즐 50 · 발견/키패드 60 · 저널 70 · 노트 80)보다 **아래**에 둔다.
+     90이던 시절엔 화면을 거의 채우는 모바일 오버레이의 좌상단 — 즉 제목 첫 글자들을
+     이 버튼이 덮었다. 데스크톱은 오버레이가 가운데 정렬이라 안 겹쳐 못 보고 지나갔다.
+     모달이 떠 있는 동안 음소거를 못 하는 건 정상 동작이고, 닫으면 곧바로 돌아온다. */
+  z-index: 45;
+}
+
+/* ── 수색 발견 오버레이 ─────────────────────── */
+.discovery-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-bg-deep) 55%, transparent);
+  pointer-events: auto;
+  z-index: 60;
+}
+
+.discovery-panel {
+  width: min(520px, calc(100% - 32px));
+  max-height: calc(100% - 32px);
+  overflow-y: auto;
+  border: var(--stroke-outline) solid var(--color-hologram);
+  border-radius: var(--corner-radius);
+  background: color-mix(in srgb, var(--color-bg-deep) 90%, var(--color-hologram));
+  box-shadow: 0 0 calc(var(--glow-blur) * 2) color-mix(in srgb, var(--color-hologram) 40%, transparent);
+  padding: 1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.discovery-badge {
+  align-self: flex-start;
+  border: 1px solid var(--color-success);
+  border-radius: var(--corner-radius);
+  color: var(--color-success);
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.7rem;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 var(--glow-blur) color-mix(in srgb, var(--color-success) 60%, transparent);
+}
+
+.discovery-body {
+  line-height: 1.8;
+  font-size: 0.92rem;
+  white-space: pre-line;
+}
+
+/* 재수색 안내 — 본문(단서)보다 한 단 낮은 톤 */
+.discovery-footer {
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  border-top: 1px solid color-mix(in srgb, var(--color-line) 60%, transparent);
+  padding-top: 0.6rem;
+}
+
+/* ── 키패드 (코드형 게이트) ──────────────────── */
+.keypad-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-bg-deep) 55%, transparent);
+  pointer-events: auto;
+  z-index: 60;
+}
+
+.keypad-panel {
+  position: relative;
+  border: var(--stroke-outline) solid var(--color-hologram);
+  border-radius: var(--corner-radius);
+  background: color-mix(in srgb, var(--color-bg-deep) 92%, var(--color-hologram));
+  box-shadow: 0 0 calc(var(--glow-blur) * 2) color-mix(in srgb, var(--color-hologram) 45%, transparent);
+  padding: 1rem 1.2rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  width: min(280px, calc(100% - 48px));
+}
+
+.keypad-prompt {
+  color: var(--color-hologram);
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  line-height: 1.5;
+  padding-right: 44px;
+}
+
+.keypad-display {
+  border: 1px solid var(--color-line);
+  border-radius: var(--corner-radius);
+  background: color-mix(in srgb, var(--color-bg-deep) 80%, black);
+  color: var(--color-success);
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-align: center;
+  padding: 0.5rem;
+  font-variant-numeric: tabular-nums;
+}
+.keypad-display.wrong {
+  color: var(--color-danger);
+  animation: keypad-shake 0.3s;
+}
+@keyframes keypad-shake {
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.keypad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.keypad-key {
+  min-height: 48px;
+  border: var(--stroke-outline) solid var(--color-line);
+  border-radius: var(--corner-radius);
+  background: color-mix(in srgb, var(--color-hologram) 8%, transparent);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 1.15rem;
+  cursor: pointer;
+}
+.keypad-key:active {
+  background: color-mix(in srgb, var(--color-hologram) 25%, transparent);
+}
+
+/* ── 건반 스킨 (3번 방 멜로디 게이트) ──
+   8건반 한 줄 + 아래 행에 지우기/연주 확인. 건반마다 음높이 비례 막대(무음 백업). */
+.keypad-panel:has(.keypad-keyboard) {
+  width: min(420px, calc(100% - 48px));
+}
+.keypad-keyboard {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 0.3rem;
+}
+.keypad-note {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.3rem;
+  min-height: 72px;
+  padding: 0.4rem 0.1rem;
+}
+.keypad-note-bar {
+  width: 8px;
+  border-radius: 2px;
+  background: var(--color-hologram);
+  opacity: 0.8;
+}
+.keypad-note-name {
+  font-size: 0.78rem;
+  letter-spacing: 0;
+}
+.keypad-action {
+  grid-column: span 4;
+  min-height: 44px;
+  font-size: 0.9rem;
+}
+
+/* ── 인벤토리 HUD (획득 단서 아이콘 스트립) ──── */
+.item-hud {
+  position: absolute;
+  top: max(60px, calc(env(safe-area-inset-top) + 48px));
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.item-chip {
+  width: 44px;
+  height: 44px;
+  border: var(--stroke-outline) solid var(--color-success);
+  border-radius: var(--corner-radius);
+  background: color-mix(in srgb, var(--color-bg-deep) 82%, var(--color-success));
+  font-size: 1.3rem;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+/* ── 엔딩 화면 ──────────────────────────────── */
+.ending-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.6rem;
+  background: color-mix(in srgb, var(--color-bg-deep) 88%, black);
+  z-index: 200;
+  pointer-events: auto;
+  animation: ending-fade 2s ease-out;
+}
+@keyframes ending-fade {
+  from { opacity: 0; }
+}
+.ending-hint {
+  color: var(--color-line);
+  font-size: 0.9rem;
+  letter-spacing: 0.15em;
+}
+.ending-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: center;
+  color: var(--color-text);
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+  border: var(--stroke-outline) solid var(--color-line);
+  border-radius: 8px;
+  padding: 0.8rem 1.6rem;
+  background: color-mix(in srgb, var(--color-bg-deep) 70%, transparent);
+}
+.ending-actions {
+  display: flex;
+  gap: 0.8rem;
+}
+.ending-button {
+  min-height: 44px;
+  padding: 0.4rem 1.4rem;
+  border: var(--stroke-outline) solid var(--color-line);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.ending-button:hover {
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+
+/* ── 가상 조이스틱 + ACT (터치 환경 전용) ────── */
+.joystick-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.joystick-base {
+  position: absolute;
+  left: max(24px, env(safe-area-inset-left));
+  bottom: max(28px, env(safe-area-inset-bottom));
+  width: 108px;
+  height: 108px;
+  border: var(--stroke-outline) solid var(--color-line);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-bg-deep) 60%, transparent);
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.joystick-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-hologram) 45%, var(--color-bg-deep));
+  border: var(--stroke-outline) solid var(--color-hologram);
+  box-shadow: 0 0 var(--glow-blur) color-mix(in srgb, var(--color-hologram) 40%, transparent);
+}
+
+.act-button {
+  position: absolute;
+  right: max(28px, env(safe-area-inset-right));
+  bottom: max(40px, env(safe-area-inset-bottom));
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  border: var(--stroke-outline) solid var(--color-hologram);
+  background: color-mix(in srgb, var(--color-hologram) 18%, var(--color-bg-deep));
+  color: var(--color-hologram);
+  font-family: inherit;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  pointer-events: auto;
+  cursor: pointer;
+}

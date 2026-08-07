@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <!-- ⚠ 이 블록은 src/config.ts가 못 닿는 유일한 자리다 (빌드 전 정적 HTML).
+         새 교과로 갈아탈 때 제목·설명·URL을 여기서도 직접 고칠 것.
+         og:image는 두지 않는다 — 1200×630 대표 이미지가 없으면 깨진 썸네일이 뜬다. -->
+    <title>Quantum Escape II: Second Orbit</title>
+    <meta
+      name="description"
+      content="소리로 잠긴 청음실을 빠져나가는 물리 방탈출. 2022 개정 '역학과 에너지'."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Quantum Escape" />
+    <meta property="og:title" content="Quantum Escape II: Second Orbit" />
+    <meta
+      property="og:description"
+      content="소리로 잠긴 청음실을 빠져나가는 물리 방탈출. 2022 개정 '역학과 에너지'."
+    />
+    <meta name="twitter:card" content="summary" />
+  </head>
+  <body>
+    <!-- Netlify Forms 감지용 정적 폼 (배포 시 봇이 스캔) — 실제 UI는 main.ts의 문의하기 오버레이 -->
+    <form name="contact" data-netlify="true" netlify-honeypot="bot-field" hidden>
+      <input type="text" name="bot-field" />
+      <input type="text" name="category" />
+      <textarea name="message"></textarea>
+    </form>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

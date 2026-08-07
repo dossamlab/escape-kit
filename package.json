@@ -1,0 +1,22 @@
+{
+  "name": "escape-kit",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:test": "vite --port 5399 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "assets": "node scripts/build-assets.mjs",
+    "story": "node scripts/build-story.mjs",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "@resvg/resvg-js": "^2.6.2",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.5"
+  }
+}

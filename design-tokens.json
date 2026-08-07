@@ -1,0 +1,37 @@
+{
+  "color": {
+    "bg-deep": "#212531",
+    "tile-a": "#343b4a",
+    "tile-b": "#2d3341",
+    "floor-grout": "#232833",
+    "wall-ne": "#414b5e",
+    "wall-nw": "#38414f",
+    "wall-top": "#2a3140",
+    "baseboard": "#1f242e",
+    "bg-void": "#101318",
+    "line": "#3d5a80",
+    "hologram": "#4da8ff",
+    "danger": "#e63946",
+    "success": "#ffd166",
+    "spectrum-red": "#ff3b30",
+    "spectrum-cyan": "#32ade6",
+    "spectrum-blue": "#4361ee",
+    "spectrum-violet": "#7209b7",
+    "text": "#dce7f5",
+    "screen-bright": "#e1e9f6",
+    "console-body": "#42454d",
+    "char-coat": "#c2ae8b",
+    "char-coat-shadow": "#907c62",
+    "char-hair": "#76212b",
+    "char-hair-shadow": "#441021",
+    "char-skin": "#ecbd9b",
+    "char-dark": "#17171a"
+  },
+  "stroke": { "outline": 2, "glow-blur": 6 },
+  "tile": { "w": 128, "h": 64 },
+  "corner-radius": 4,
+  "font": {
+    "family": "'Pretendard', 'Noto Sans KR', sans-serif",
+    "holo-letter-spacing": "0.35em"
+  }
+}

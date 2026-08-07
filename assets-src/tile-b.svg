@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="{{tile.w}}" height="{{tile.h}}" viewBox="0 0 128 64">
+  <!-- 바닥 어두운 칸 — 한랭 스틸 타일 + 그라우트 라인 -->
+  <path d="M 64 0 L 128 32 L 64 64 L 0 32 Z" fill="{{color.tile-b}}" />
+  <path d="M 64 0 L 128 32 L 64 64 L 0 32 Z" fill="none" stroke="{{color.floor-grout}}" stroke-width="1.6" />
+</svg>

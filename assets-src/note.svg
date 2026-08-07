@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="56" viewBox="0 0 48 56">
+  <!-- 연구노트 — 홀로그램으로 떠 있는 박사의 노트 (수집 요소) -->
+  <ellipse cx="24" cy="50" rx="12" ry="4" fill="{{color.char-dark}}" opacity="0.35" />
+  <g filter="url(#glow-outline)">
+    <path d="M 12 40 L 12 12 L 30 12 L 36 18 L 36 40 Z"
+          fill="{{color.screen-bright}}" opacity="0.9"
+          stroke="{{color.hologram}}" stroke-width="{{stroke.outline}}" stroke-linejoin="round" />
+    <path d="M 30 12 L 30 18 L 36 18 Z" fill="{{color.hologram}}" opacity="0.5" />
+  </g>
+  <g stroke="{{color.hologram}}" stroke-width="1.4" opacity="0.8">
+    <path d="M 16 22 L 32 22" />
+    <path d="M 16 27 L 32 27" />
+    <path d="M 16 32 L 26 32" />
+  </g>
+</svg>
