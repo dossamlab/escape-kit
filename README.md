@@ -25,8 +25,15 @@
 
 ## 5분 시작
 
+**필요한 것**: [Node.js](https://nodejs.org) 20.19 이상(또는 22.12 이상) · git ·
+그리고 [Claude Code](https://claude.com/claude-code).
+
 ```bash
-git clone <이 저장소> my-escape && cd my-escape && npm install && npm run assets && npm run dev
+git clone https://github.com/dossamlab/escape-kit.git my-escape
+```
+
+```bash
+cd my-escape && npm install && npm run assets && npm run dev
 ```
 
 `http://localhost:5373`이 열린다. 예제 방을 한 바퀴 돌아 보라 —
@@ -37,7 +44,11 @@ git clone <이 저장소> my-escape && cd my-escape && npm install && npm run as
 
 ## 다른 교과로 바꾸기
 
-Claude Code에서 한 번 실행한다:
+⚠ **먼저 clone부터 하고, 그 폴더에서 Claude Code를 열어야 한다.**
+스킬(`/new-subject` 등)은 저장소 안 `.claude/`에 들어 있어서, 폴더를 연 뒤에야 로드된다.
+링크만 주고 "이걸로 만들어 줘"라고 하면 스킬이 없는 상태로 시작한다.
+
+폴더를 열었으면 한 번 실행한다:
 
 ```
 /new-subject
@@ -98,12 +109,27 @@ Claude Code에서 한 번 실행한다:
 
 ## 확인 명령
 
+작업이 끝날 때마다:
+
+```bash
+bash scripts/verify.sh quick
+```
+
+story 생성 → **앵커 참조 검산** → 근접 판정 검산 → 타입 검사 → 빌드.
+
+퍼즐이 완성되면 e2e까지 포함한 전체 검증을 돌린다. **처음 한 번은 브라우저를
+내려받아야 한다**(수백 MB, 몇 분 걸린다):
+
+```bash
+npx playwright install chromium
+```
+
 ```bash
 bash scripts/verify.sh full
 ```
 
-story 생성 → **앵커 참조 검산** → 근접 판정 검산 → 타입 검사 → 빌드 → 에셋 →
-데스크톱·모바일 e2e. 작업이 끝날 때마다 `quick`, 퍼즐이 완성되면 `full`.
+데스크톱·모바일 두 프로젝트가 전부 그린이어야 통과다.
+전체 스위트는 수 분이 걸리므로 평소엔 관련 spec 하나만 돌린다 — `CLAUDE.md` 참조.
 
 ## 알아 둘 한계
 
