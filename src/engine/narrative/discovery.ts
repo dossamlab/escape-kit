@@ -4,6 +4,7 @@
  * 노트 오버레이(note.ts)와 같은 패밀리의 시각 언어 — 단서는 홀로그램 블루 톤.
  */
 import { getEntry } from "./dialogue";
+import { setInline } from "./markup";
 import { ITEMS } from "../../data/items";
 import { Sfx } from "../audio/sfx";
 import { bindOverlayClose, makeCloseHint } from "./overlay";
@@ -43,7 +44,7 @@ export function showDiscovery(
 
     const body = document.createElement("p");
     body.className = "discovery-body";
-    body.textContent = entry.text;
+    setInline(body, entry.text);
 
     const close = document.createElement("button");
     close.className = "note-close";

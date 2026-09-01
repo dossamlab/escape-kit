@@ -112,6 +112,33 @@ cd my-escape && npm install && npm run assets && npm run dev
 교과 특성에 맞는 입력(연표·자모 조합·주기율표·지도)이 필요하면 ③으로 가면 된다 —
 퍼즐은 `PuzzleApi`로 DOM을 통째로 받으므로 무엇이든 그릴 수 있다.
 
+## 방 만들기 도구
+
+방 하나를 그리고 배선하는 일은 손으로 좌표를 맞추다 지치기 십상이다. **화면에서
+픽셀을 눈대중으로 읽으면 틀린다** — 실측으로 45px(≈0.85타일)까지 어긋났다.
+그래서 눈대중을 대신할 도구를 넣어 두었다.
+
+| 도구 | 하는 일 |
+|---|---|
+| `tools/tiles.html` | 배경 그림 위에 **걷기 금지 칸을 직접 칠하고** 핫스팟을 찍는다. 개발 서버로 `http://localhost:5373/tools/tiles.html`. 지금 맵의 `blocks`가 이미 칠해진 채로 열린다 |
+| `scripts/blocks-from-mark.mjs` | 위에서 칠한 ASCII 지도를 **최소 개수의 `blocks` 사각형**으로 묶는다 |
+| `scripts/annotate-room.mjs` | 배경 위에 격자·blocks·핫스팟을 얹어 PNG로 뽑는다 — 좌표가 맞았는지 눈으로 본다 |
+| `scripts/measure-room.mjs` | 배경 그림에서 바닥 마름모를 찾아 캘리브레이션(scale·offset)을 구한다 |
+| `scripts/art-to-tile.mjs` | 배경 픽셀 좌표 → 타일 좌표. 가구가 몇 번 타일인지 알아낼 때 |
+| `scripts/isolate-room.mjs` | 여러 방이 한 장에 뽑혀 나왔을 때 **방 하나만** 떼어내 프레이밍을 맞춘다 |
+| `scripts/import-char.mjs` | 캐릭터 시트(2행×5열) → 8방향 48프레임 |
+| `scripts/check-reach.mjs` | 스폰에서 **모든 오브젝트에 걸어서 닿는지** 검산 |
+
+배경 그림 위에서 작업하는 도구들은 `npm run assets`를 먼저 돌려야 한다 — 배경 PNG는
+`assets-src/rooms/`에서 생성되고, 없으면 `tiles.html`이 빈 판만 띄운다(이유는 화면에 적힌다).
+
+`check-reach`가 이 목록에서 제일 조용한 사고를 막는다. `blocks`를 늘리다 보면 어느
+순간 구역 하나가 통째로 막히는데, 타입 검사에도 e2e에도 안 잡힌다 — 그 구역을 걷는
+spec이 없으면. 방을 못 깨는 빌드가 조용히 나갈 수 있다.
+
+절차 전체는 `docs/room-asset-harness.md`에 실제 제작 기록(실패 포함)으로 적혀 있다.
+장치 스프라이트는 `docs/device-sprite-harness.md`, 캐릭터는 `docs/char-asset-spec.md`.
+
 ## 확인 명령
 
 작업이 끝날 때마다:
@@ -120,7 +147,7 @@ cd my-escape && npm install && npm run assets && npm run dev
 bash scripts/verify.sh quick
 ```
 
-story 생성 → **앵커 참조 검산** → 근접 판정 검산 → 타입 검사 → 빌드.
+story 생성 → **앵커 참조 검산** → 근접 판정 검산 → **도달 가능성 검산** → 타입 검사 → 빌드.
 
 퍼즐이 완성되면 e2e까지 포함한 전체 검증을 돌린다. **처음 한 번은 브라우저를
 내려받아야 한다**(수백 MB, 몇 분 걸린다):

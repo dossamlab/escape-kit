@@ -1,0 +1,167 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>타일 찍기 — 걷기 영역 + 핫스팟</title>
+<style>
+  body { margin: 0; background: #16171c; color: #e6e9f0; font: 14px/1.5 system-ui, sans-serif; }
+  header { padding: 8px 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-bottom: 1px solid #2c2f3a; position: sticky; top: 0; background: #16171c; z-index: 2; }
+  button, select { background: #232733; color: #e6e9f0; border: 1px solid #3a3f4d; border-radius: 6px; padding: 6px 10px; font: inherit; cursor: pointer; }
+  button.on { background: #ffd166; color: #16171c; border-color: #ffd166; }
+  canvas { display: block; cursor: crosshair; }
+  #out { width: 100%; height: 150px; background: #0f1116; color: #9fe8b0; border: 0; border-top: 1px solid #2c2f3a; font: 12px/1.4 ui-monospace, monospace; padding: 8px; box-sizing: border-box; }
+  #pos { min-width: 96px; font: 13px ui-monospace, monospace; color: #ffd166; }
+  .hint { opacity: .7; font-size: 13px; }
+</style>
+<header>
+  <select id="room"><!-- maps/index.ts에서 채운다 --></select>
+  <button id="mode" class="on">모드: 막힘 칠하기</button>
+  <select id="obj"></select>
+  <button id="labels">좌표 숨기기</button>
+  <button id="reset">맵 상태로 되돌리기</button>
+  <button id="clear">전부 지우기</button>
+  <button id="copy">결과 복사</button>
+  <span id="pos"></span>
+  <span class="hint">막힘 모드: 드래그로 칠한다(빨강 = 못 걷는 칸, 지금 맵의 blocks가 미리 칠해져 있다). 핫스팟 모드: 왼쪽 목록에서 고르고 그림을 클릭.</span>
+</header>
+<canvas id="c"></canvas>
+<textarea id="out" readonly></textarea>
+<script type="module">
+// ⚠ 좌표를 여기 베껴 두지 않는다 — 예전엔 CAL·DEF를 손으로 복사해 두어 맵을 고칠 때마다
+//   조용히 어긋났다. 이제 맵 모듈에서 직접 읽는다(Vite 개발 서버가 TS를 변환해 준다).
+import { maps } from "/src/maps/index.ts";
+
+const ROOMS = Object.keys(maps);
+const calOf = (m) => ({
+  n: Math.max(m.cols, m.rows),
+  scale: m.background?.scale ?? 1,
+  scaleY: m.background?.scaleY ?? m.background?.scale ?? 1,
+  offsetX: m.background?.offsetX ?? 0,
+  offsetY: m.background?.offsetY ?? 0,
+});
+const objListOf = (m) => [
+  ["spawn", "시작 위치"],
+  ...m.objects.map((o) => [o.id, o.name ?? o.id]),
+];
+const hotOf = (m) => {
+  const out = { spawn: [...m.spawn] };
+  for (const o of m.objects) out[o.id] = [...o.tile];
+  return out;
+};
+/** 맵의 blocks 사각형을 타일 격자로 되돌린다 — 엔진 isBlocked와 같은 판정(경계 포함) */
+const blockedOf = (m, n) => {
+  const g = Array.from({ length: n }, () => new Array(n).fill(false));
+  for (let x = 0; x < n; x++)
+    for (let y = 0; y < n; y++)
+      g[x][y] = (m.blocks ?? []).some(
+        (b) => x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1
+      );
+  return g;
+};
+const c = document.getElementById("c"), ctx = c.getContext("2d");
+const $ = (id) => document.getElementById(id);
+let img = new Image(), cal, N, blocked = [], hot = {}, painting = false, paintVal = true;
+// 첫 방을 기본값으로 — 방 id를 박아 두면 킷을 받아 방을 새로 만든 사람에게서 빈 화면이 뜬다
+let showLabels = true, mode = "block", roomId = ROOMS[0];
+const Z = 1.6;
+const AX = (x, y) => ((((x - y) * 128) / 2 - cal.offsetX) / cal.scale) * Z;
+const AY = (x, y) => ((((x + y) * 64) / 2 - cal.offsetY) / cal.scaleY) * Z;
+function toTile(px, py) {
+  const sx = (px / Z) * cal.scale + cal.offsetX;
+  const sy = (py / Z) * cal.scaleY + cal.offsetY;
+  return [sx / 128 + sy / 64, sy / 64 - sx / 128];
+}
+function load(id) {
+  roomId = id; cal = calOf(maps[id]); N = cal.n;
+  blocked = blockedOf(maps[id], N); // 지금 맵에 설정된 이동 금지 칸을 미리 칠해 둔다
+  hot = hotOf(maps[id]);
+  $("obj").innerHTML = objListOf(maps[id])
+    .map(([v, t]) => `<option value="${v}">${t}</option>`)
+    .join("");
+  const sprite = maps[id].background?.sprite ?? id;
+  img = new Image();
+  img.onload = () => { c.width = img.width * Z; c.height = img.height * Z; draw(); };
+  // 배경이 없으면 검은 화면만 남아 무엇이 잘못됐는지 알 수 없다 — 이유를 화면에 적는다
+  img.onerror = () => {
+    const el = document.querySelector(".hint");
+    if (el) el.textContent =
+      "배경 이미지를 찾지 못했다: /assets/" + sprite + ".png — 먼저 npm run assets 로 배경을 생성하라.";
+  };
+  // 파일 이름은 방 id가 아니라 background.sprite다. 둘이 같은 게임도 있어 눈에 안 띈다.
+  img.src = "/assets/" + sprite + ".png";
+}
+function draw() {
+  ctx.clearRect(0, 0, c.width, c.height);
+  ctx.drawImage(img, 0, 0, c.width, c.height);
+  for (let x = 0; x < N; x++) for (let y = 0; y < N; y++) {
+    ctx.beginPath();
+    ctx.moveTo(AX(x, y - 0.5), AY(x, y - 0.5));
+    ctx.lineTo(AX(x + 0.5, y), AY(x + 0.5, y));
+    ctx.lineTo(AX(x, y + 0.5), AY(x, y + 0.5));
+    ctx.lineTo(AX(x - 0.5, y), AY(x - 0.5, y));
+    ctx.closePath();
+    ctx.fillStyle = blocked[x][y] ? "rgba(255,50,50,0.45)" : "rgba(80,220,255,0.05)";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(0,255,255,0.30)";
+    ctx.lineWidth = 1; ctx.stroke();
+  }
+  if (showLabels) {
+    ctx.font = "bold 11px ui-monospace, monospace"; ctx.textAlign = "center";
+    for (let x = 0; x < N; x++) for (let y = 0; y < N; y++) {
+      ctx.lineWidth = 3; ctx.strokeStyle = "rgba(0,0,0,0.8)";
+      ctx.strokeText(x + "," + y, AX(x, y), AY(x, y) + 4);
+      ctx.fillStyle = "#fff"; ctx.fillText(x + "," + y, AX(x, y), AY(x, y) + 4);
+    }
+  }
+  ctx.textAlign = "left";
+  for (const [id, p] of Object.entries(hot)) {
+    const px = AX(p[0], p[1]), py = AY(p[0], p[1]);
+    ctx.beginPath(); ctx.arc(px, py, 9, 0, Math.PI * 2);
+    ctx.fillStyle = id === "spawn" ? "#7dff9b" : id.startsWith("note") ? "#4da8ff" : "#ffd166";
+    ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = "#000"; ctx.stroke();
+    ctx.font = "bold 15px sans-serif"; ctx.lineWidth = 4; ctx.strokeStyle = "rgba(0,0,0,0.9)";
+    ctx.strokeText(id, px + 12, py + 5); ctx.fillStyle = "#fff"; ctx.fillText(id, px + 12, py + 5);
+  }
+  emit();
+}
+function emit() {
+  const rows = [];
+  for (let y = 0; y < N; y++) {
+    let s = "";
+    for (let x = 0; x < N; x++) s += blocked[x][y] ? "#" : ".";
+    rows.push(s);
+  }
+  const hs = Object.entries(hot).map(([k, p]) => `${k} = [${p[0].toFixed(1)}, ${p[1].toFixed(1)}]`);
+  $("out").value =
+    `ROOM ${roomId} N=${N}\n--- 막힘 (행=y 0..${N - 1}, 열=x 0..${N - 1}, # = 못 걷는 칸) ---\n` +
+    rows.join("\n") + (hs.length ? `\n--- 핫스팟 ---\n` + hs.join("\n") : "");
+}
+c.addEventListener("pointerdown", (e) => {
+  const r = c.getBoundingClientRect();
+  const [fx, fy] = toTile(e.clientX - r.left, e.clientY - r.top);
+  if (mode === "hot") { hot[$("obj").value] = [fx, fy]; draw(); return; }
+  const x = Math.round(fx), y = Math.round(fy);
+  if (x < 0 || y < 0 || x >= N || y >= N) return;
+  paintVal = !blocked[x][y]; blocked[x][y] = paintVal; painting = true; draw();
+  c.setPointerCapture(e.pointerId);
+});
+c.addEventListener("pointermove", (e) => {
+  const r = c.getBoundingClientRect();
+  const [fx, fy] = toTile(e.clientX - r.left, e.clientY - r.top);
+  const x = Math.round(fx), y = Math.round(fy);
+  $("pos").textContent = `[${fx.toFixed(1)}, ${fy.toFixed(1)}]`;
+  if (mode !== "block" || !painting || x < 0 || y < 0 || x >= N || y >= N) return;
+  if (blocked[x][y] !== paintVal) { blocked[x][y] = paintVal; draw(); }
+});
+addEventListener("pointerup", () => (painting = false));
+$("room").onchange = (e) => load(e.target.value);
+$("mode").onclick = (e) => {
+  mode = mode === "block" ? "hot" : "block";
+  e.target.textContent = mode === "block" ? "모드: 막힘 칠하기" : "모드: 핫스팟 찍기";
+  e.target.classList.toggle("on", mode === "block");
+};
+$("labels").onclick = (e) => { showLabels = !showLabels; e.target.textContent = showLabels ? "좌표 숨기기" : "좌표 보기"; draw(); };
+$("clear").onclick = () => { blocked = blocked.map((col) => col.map(() => false)); draw(); };
+$("reset").onclick = () => { blocked = blockedOf(maps[roomId], N); draw(); };
+$("copy").onclick = () => { $("out").select(); document.execCommand("copy"); };
+$("room").innerHTML = ROOMS.map((id) => `<option value="${id}">${id}</option>`).join("");
+load(ROOMS[0]);
+</script>

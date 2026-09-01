@@ -25,11 +25,24 @@ export class KeyboardInput {
       if (e.code === "KeyE" || e.code === "Space") this.onInteract?.();
     };
     const up = (e: KeyboardEvent) => this.pressed.delete(e.code);
+    /**
+     * 눌린 키를 통째로 비운다 — **창이 포커스를 잃으면 keyup이 영영 안 온다.**
+     * (alt-tab, 주소창 클릭, 개발자도구 열기, 탭 전환) 그때 키가 눌린 채로 남으면
+     * 캐릭터가 입력 없이 혼자 걷는다. 2026-08-19 제보로 잡았고 input.spec.ts가 지킨다.
+     */
+    const clear = () => this.pressed.clear();
+    const onVisibility = () => {
+      if (target.document.hidden) clear();
+    };
     target.addEventListener("keydown", down);
     target.addEventListener("keyup", up);
+    target.addEventListener("blur", clear);
+    target.document.addEventListener("visibilitychange", onVisibility);
     return () => {
       target.removeEventListener("keydown", down);
       target.removeEventListener("keyup", up);
+      target.removeEventListener("blur", clear);
+      target.document.removeEventListener("visibilitychange", onVisibility);
     };
   }
 

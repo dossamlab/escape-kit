@@ -39,9 +39,24 @@ function flush() {
       paras[paras.length - 1].push(q);
     }
   }
+  // 문단 안에서 표 행(|)과 목록 항목(- )은 제 줄을 지킨다 — 노트 오버레이가
+  // 이 줄 구조로 <table>/<ul>을 세운다. 목록 항목의 이어지는 줄은 항목에 붙인다.
+  const joinPara = (lines) => {
+    const out = [];
+    for (const raw of lines) {
+      const t = raw.trim();
+      const prev = out[out.length - 1];
+      if (out.length === 0 || t.startsWith("|") || t.startsWith("- ") || prev.startsWith("|")) {
+        out.push(t);
+      } else {
+        out[out.length - 1] = `${prev} ${t}`;
+      }
+    }
+    return out.join("\n").trim();
+  };
   let text = paras
     .filter((p) => p.length > 0)
-    .map((p) => p.join(" ").trim())
+    .map((p) => joinPara(p))
     // *(...)* 단독 문단은 연출 지시(프로덕션 노트) — 게임 텍스트에서 제외
     .filter((p) => !/^\*\(.+\)\*$/.test(p))
     // 문단 전체가 따옴표로 감싸인 대사만 벗긴다. 앞뒤를 각각 벗기면

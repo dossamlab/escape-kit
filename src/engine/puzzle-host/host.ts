@@ -6,6 +6,7 @@ import tokens from "../../../design-tokens.json";
 import type { PuzzleModule } from "./types";
 import { onDrag } from "../input/pointer";
 import { showDialogue } from "../narrative/dialogue";
+import { setInline } from "../narrative/markup";
 import { bus } from "../events/EventBus";
 import { Sfx } from "../audio/sfx";
 import { sessionStats } from "../core/stats";
@@ -88,7 +89,10 @@ export function openPuzzle(module: PuzzleModule, host: HTMLElement): Promise<boo
           delete hintBtn.dataset.locked;
           return;
         }
-        const label = shown === 0 ? "힌트" : `힌트 ${shown + 1}/${hints.length}`;
+        // **쓴 개수/전체**다. 예전엔 shown===0에서 "힌트", 그 뒤로 `shown+1`을 찍어
+        // 하나를 본 상태가 "힌트 2/3"으로 보였다 — 두 개를 쓴 것으로 읽힌다는 제보
+        // (2026-08-19 교사 실플레이). 0부터 세면 잠금 해제 상태와도 어긋나지 않는다.
+        const label = `힌트 ${shown}/${hints.length}`;
         if (unlocked(shown)) {
           hintBtn.textContent = label;
           hintBtn.disabled = false;
@@ -105,7 +109,7 @@ export function openPuzzle(module: PuzzleModule, host: HTMLElement): Promise<boo
         const p = document.createElement("p");
         p.className = "puzzle-hint-item";
         p.dataset.testid = `hint-${shown + 1}`;
-        p.textContent = `${shown + 1}. ${hints[shown]}`;
+        setInline(p, `${shown + 1}. ${hints[shown]}`);
         hintList.appendChild(p);
         shown += 1;
         sessionStats.addHint();

@@ -14,7 +14,12 @@
     "typecheck": "tsc --noEmit",
     "assets": "node scripts/build-assets.mjs",
     "story": "node scripts/build-story.mjs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "anchors": "node scripts/check-anchors.mjs",
+    "layout": "node scripts/check-layout.mjs",
+    "reach": "node scripts/check-reach.mjs",
+    "verify": "bash scripts/verify.sh",
+    "verify:full": "bash scripts/verify.sh full"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",

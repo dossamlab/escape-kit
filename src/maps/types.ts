@@ -15,8 +15,15 @@ export interface MapObject {
   /** 상호작용 시 여는 퍼즐 (registry 등록 id). 없거나 미등록이면 interactAnchor 표시 */
   puzzleId?: string;
   /** 문: 상호작용 시 다른 방으로 이동(또는 ending=true면 엔딩 시퀀스).
-   *  requiresEvent가 있으면 그 이벤트 발화 전엔 잠김 */
-  door?: { toMap?: string; spawn?: [number, number]; requiresEvent?: string; ending?: boolean };
+   *  requiresEvent가 있으면 그 이벤트 발화 전엔 잠김.
+   *  배열이면 **전부** 발화해야 열린다 — 봉인 없는 방에서 구역 건너뛰기를 막는 장치다
+   *  (방2는 봉인이 없어 문이 마지막 퍼즐 하나만 요구하면 나머지 셋을 지나칠 수 있다). */
+  door?: {
+    toMap?: string;
+    spawn?: [number, number];
+    requiresEvent?: string | string[];
+    ending?: boolean;
+  };
   /** 연구노트: 상호작용 시 노트 열람 + 수집 (story.md의 note-XX) */
   noteId?: string;
   /** 수색 지점: 조사 시 발견 오버레이 표시 (+아이템 획득). 방탈출 단서 체인의 재료 */
@@ -84,6 +91,19 @@ export interface GameMap {
     scaleY?: number;
     offsetX: number;
     offsetY: number;
+    /**
+     * 앞가림 구조물 — 그림 속 기둥·나무처럼 **캐릭터가 뒤로 지나가면 가려야 하는** 것.
+     * 배경은 통짜 한 장이라 캐릭터 아래에만 깔리므로, 여기 적은 조각만 다시 위에 덮는다.
+     *
+     * `shapes`는 **원본 이미지 픽셀 좌표**의 타원·사각형이고(여럿이면 합집합),
+     * `base`는 그 구조물의 **가장 앞(남쪽) 월드 좌표**다 — 깊이 정렬에 이 값으로 끼어들어
+     * 앞에 선 캐릭터는 안 가리고 뒤에 선 캐릭터만 가린다. 실루엣이 헐거우면 잎 틈으로
+     * 보여야 할 캐릭터까지 가리므로 구조물에 바싹 맞춘다.
+     */
+    occluders?: {
+      shapes: ({ ellipse: [number, number, number, number] } | { rect: [number, number, number, number] })[];
+      base: [number, number];
+    }[];
   };
   /** 통행 불가 영역 (타일 좌표 사각형) — 배경에 그려진 가구를 뚫고 가지 못하게 */
   blocks?: { x0: number; y0: number; x1: number; y1: number }[];

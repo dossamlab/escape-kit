@@ -5,6 +5,7 @@
  */
 import { getEntry, showDialogue, isDialogueBusy } from "../narrative/dialogue";
 import { Sfx, audioCtx, isMuted } from "../audio/sfx";
+import { setInline } from "../narrative/markup";
 
 export interface KeypadKey {
   /** code의 한 글자에 대응하는 값 */
@@ -63,7 +64,7 @@ export function openKeypad(opts: KeypadOptions, host: HTMLElement): Promise<bool
 
     const prompt = document.createElement("div");
     prompt.className = "keypad-prompt";
-    prompt.textContent = opts.promptAnchor ? (getEntry(opts.promptAnchor)?.text ?? "") : "";
+    setInline(prompt, opts.promptAnchor ? (getEntry(opts.promptAnchor)?.text ?? "") : "");
 
     const display = document.createElement("div");
     display.className = "keypad-display";
@@ -99,6 +100,9 @@ export function openKeypad(opts: KeypadOptions, host: HTMLElement): Promise<bool
       sync();
     };
 
+    /** 키 스킨에서만 쓰는 확인·지우기 행 (숫자 그리드는 격자 안에 들어 있다) */
+    let extraRow: HTMLElement | undefined;
+
     const grid = document.createElement("div");
     if (opts.keys) {
       // 키 스킨 — 한 줄 배치. freq를 준 키들만 음높이 비례 막대를 얹는다(무음 환경 백업).
@@ -124,18 +128,21 @@ export function openKeypad(opts: KeypadOptions, host: HTMLElement): Promise<bool
         btn.addEventListener("click", () => pressDigit(key.value));
         grid.appendChild(btn);
       }
-      // 확인·지우기 — 건반 줄 아래 별도 행
+      // 확인·지우기 — 키 줄과 섞이지 않게 제 줄에 둔다
+      const actions = document.createElement("div");
+      actions.className = "keypad-actions";
       for (const [label, testid, fn] of [
         ["지우기", "keypad-clear", clearAll],
-        ["연주 확인", "keypad-enter", () => void submit()],
+        ["확인", "keypad-enter", () => void submit()],
       ] as const) {
         const btn = document.createElement("button");
         btn.className = "keypad-key keypad-action";
         btn.dataset.testid = testid;
         btn.textContent = label;
         btn.addEventListener("click", fn);
-        grid.appendChild(btn);
+        actions.appendChild(btn);
       }
+      extraRow = actions;
     } else {
       grid.className = "keypad-grid";
       for (const key of ["1", "2", "3", "4", "5", "6", "7", "8", "9", "C", "0", "⏎"]) {
@@ -158,6 +165,7 @@ export function openKeypad(opts: KeypadOptions, host: HTMLElement): Promise<bool
     close.textContent = "✕";
 
     panel.append(prompt, display, grid, close);
+    if (extraRow) grid.after(extraRow);
     overlay.appendChild(panel);
     host.appendChild(overlay);
 

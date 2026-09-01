@@ -5,6 +5,7 @@
 import type { PuzzleManifest } from "../puzzle-host/types";
 import { Sfx } from "../audio/sfx";
 import { bindOverlayClose, makeCloseHint } from "./overlay";
+import { setInline } from "./markup";
 
 export function showPrincipleCard(manifest: PuzzleManifest, host: HTMLElement): Promise<void> {
   const lines = manifest.principle;
@@ -40,7 +41,7 @@ export function showPrincipleCard(manifest: PuzzleManifest, host: HTMLElement): 
     body.className = "principle-list";
     for (const line of lines) {
       const li = document.createElement("li");
-      li.textContent = line;
+      setInline(li, line);
       body.appendChild(li);
     }
 

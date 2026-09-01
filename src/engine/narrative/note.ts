@@ -5,6 +5,63 @@
 import { storyData } from "../../data/story-data";
 import { Sfx } from "../audio/sfx";
 import { bindOverlayClose, makeCloseHint } from "./overlay";
+import { setInline } from "./markup";
+
+/** 표 구분선 행(|---|---|)인가 */
+const isRule = (cells: string[]): boolean => cells.every((c) => /^:?-+:?$/.test(c));
+
+/**
+ * 노트 본문 렌더 — story-data의 줄 구조를 블록으로 세운다.
+ * `|` 줄 연속 → <table>, `- ` 줄 연속 → <ul>, 나머지 한 줄 = 문단 <p>.
+ * (build-story가 표·목록 줄을 제 줄로 보존한다 — 마크다운 파서를 들이지 않는 이유)
+ */
+function renderNoteBody(text: string): HTMLElement {
+  const body = document.createElement("div");
+  body.className = "note-body";
+  const lines = text.split("\n");
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (line.startsWith("|")) {
+      const table = document.createElement("table");
+      table.className = "note-table";
+      let row = 0;
+      while (i < lines.length && lines[i].startsWith("|")) {
+        const cells = lines[i]
+          .replace(/^\||\|$/g, "")
+          .split("|")
+          .map((c) => c.trim());
+        i += 1;
+        if (isRule(cells)) continue;
+        const tr = document.createElement("tr");
+        for (const c of cells) {
+          const cell = document.createElement(row === 0 ? "th" : "td");
+          setInline(cell, c);
+          tr.appendChild(cell);
+        }
+        table.appendChild(tr);
+        row += 1;
+      }
+      body.appendChild(table);
+    } else if (line.startsWith("- ")) {
+      const ul = document.createElement("ul");
+      ul.className = "note-list";
+      while (i < lines.length && lines[i].startsWith("- ")) {
+        const li = document.createElement("li");
+        setInline(li, lines[i].slice(2));
+        ul.appendChild(li);
+        i += 1;
+      }
+      body.appendChild(ul);
+    } else {
+      const p = document.createElement("p");
+      setInline(p, line);
+      body.appendChild(p);
+      i += 1;
+    }
+  }
+  return body;
+}
 
 export function showNote(noteId: string, advanced: boolean, host: HTMLElement): Promise<void> {
   const entry = storyData[noteId];
@@ -36,9 +93,7 @@ export function showNote(noteId: string, advanced: boolean, host: HTMLElement): 
       header.appendChild(badge);
     }
 
-    const body = document.createElement("p");
-    body.className = "note-body";
-    body.textContent = entry.text;
+    const body = renderNoteBody(entry.text);
 
     const close = document.createElement("button");
     close.className = "note-close";

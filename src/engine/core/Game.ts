@@ -3,7 +3,7 @@
  * 퍼즐 내용은 모른다 — 상호작용 시 스토리 앵커 표시/이벤트 발화까지만 책임.
  */
 import tokens from "../../../design-tokens.json";
-import { TILE_W, TILE_H, worldToScreen, screenDirToWorld } from "./iso";
+import { TILE_W, TILE_H, worldToScreen, screenDirToWorld, keyDirToWorld } from "./iso";
 import { loadSprites, type Sprites } from "./assets";
 import { KeyboardInput } from "../input/keyboard";
 import { VirtualJoystick, isTouchDevice } from "../input/joystick";
@@ -44,12 +44,13 @@ const WALL_H = 96 * WALL_STRETCH; // 뒷벽 세그먼트의 수직 높이(px) �
 //   그라데이션으로만 쓴다. 예전엔 이 높이의 기둥 윗면을 마름모로 그렸는데
 //   "공중에 뜬 검은 상자"로 읽혔다(실제 제보).
 // 300으로 뒀더니 장막이 방 절반 높이라 경계 북쪽 1~2타일의 **열린 구역** 노트·장치까지
-// 가려 "봉인 안"처럼 읽혔다(모바일 실측). 격벽(BULKHEAD_H)이 차단 신호를 담당하므로
+// 가려 "봉인 안"처럼 읽혔다(모바일 실측). 차단 신호는 경계 등불선이 담당하므로
 // 어둠은 그 뒤 분위기만 — 낮게 깐다.
 const SEAL_LIFT = 160;
-// BULKHEAD_H: 경계에 서는 차단 격벽의 높이(월드 px). 캐릭터(250)의 허리쯤 —
-//   "여기서 물리적으로 막혔다"는 신호가 어둠만으로는 약했다.
-const BULKHEAD_H = 74;
+
+// 앞가림 구조물(background.occluders)을 덮는 진하기. 1이면 뒤에 선 캐릭터가 완전히 사라져
+// "내 캐릭터가 어디 갔지"가 된다 — 잎 사이로 비치는 정도로 남긴다.
+const OCCLUDER_ALPHA = 0.68;
 
 // 카메라 줌 — 월드 전체(배경·타일·벽·캐릭터·사물)에 균일 적용해 시야를 넓힌다.
 // 에셋 배율을 개별로 줄이면 서로의 비율이 깨지므로, 렌더 좌표계에서 한 번에 축소한다.
@@ -82,8 +83,16 @@ export class Game {
   /** 걷기 애니메이션 위상 (이동 중일 때만 증가) — 정수부 짝/홀로 a/b 프레임 교대 */
   private walkPhase = 0;
   private moving = false;
-  /** 바라보는 방향 (대각 4방향 + 좌우 측면) — 정지 시 마지막 방향 유지 */
-  private facing: "se" | "sw" | "ne" | "nw" | "e" | "w" = "se";
+  /**
+   * 바라보는 방향 — 정지 시 마지막 방향 유지.
+   * 이름은 월드가 아니라 **화면** 기준이다(아이소메트릭이라 둘이 다르다):
+   * `s`=화면 아래(카메라 쪽), `n`=화면 위, `e`=오른쪽 … 스프라이트 파일명이 이 이름을 쓴다.
+   */
+  private facing: (typeof Game.OCTANTS)[number] = "s";
+  /** atan2 각도 → 8방향. 인덱스 0이 오른쪽(e), 시계 방향(화면 y는 아래가 +) */
+  private static readonly OCTANTS = [
+    "e", "se", "s", "sw", "w", "nw", "n", "ne",
+  ] as const;
   /** 선택한 캐릭터 (남/여) — 저장에서 복원 */
   private gender: "m" | "f" = loadProgress().character ?? "m";
   /** 전정 감각 배려: 모션 최소화 선호 시 보빙·기울임 생략 */
@@ -200,7 +209,8 @@ export class Game {
       if (m.dark) watch.add(m.dark.litByEvent);
       for (const s of m.sealed ?? []) s.opensWhen.forEach((e) => watch.add(e));
       for (const o of m.objects)
-        if (o.door?.requiresEvent) watch.add(o.door.requiresEvent);
+        if (o.door?.requiresEvent)
+          for (const ev of [o.door.requiresEvent].flat()) watch.add(ev);
     }
     watch.forEach((ev) =>
       bus.on(ev, () => {
@@ -372,9 +382,9 @@ export class Game {
   }
 
   private isDoorLocked(obj: MapObject): boolean {
-    return (
-      !!obj.door?.requiresEvent && !this.firedEvents.has(obj.door.requiresEvent)
-    );
+    const need = obj.door?.requiresEvent;
+    if (!need) return false;
+    return ![need].flat().every((ev) => this.firedEvents.has(ev));
   }
 
   /** 에필로그: 최종 문 개방 — 연구노트 완주 여부로 분기.
@@ -534,7 +544,10 @@ export class Game {
     const sy = ky + jy;
     this.moving = sx !== 0 || sy !== 0;
     if (this.moving) {
-      const [wx, wy] = screenDirToWorld(sx, sy);
+      // 방향키는 8칸으로 스냅해 **대각이 방의 축을 따르게** 하고(iso.ts 주석),
+      // 조이스틱은 연속 방향 그대로 — 스틱은 26.57°든 뭐든 겨눈 대로 간다.
+      const [wx, wy] =
+        kx !== 0 || ky !== 0 ? keyDirToWorld(kx, ky) : screenDirToWorld(jx, jy);
       const margin = 0.4;
       // 축 분리 이동 + 통행 불가(blocks) 판정 — 막힌 축만 취소해 벽면을 따라 미끄러진다
       const nx = Math.min(
@@ -548,12 +561,11 @@ export class Game {
       if (!this.isBlocked(nx, this.player.y)) this.player.x = nx;
       if (!this.isBlocked(this.player.x, ny)) this.player.y = ny;
       this.walkPhase += dt * 7; // 걷기 프레임 속도 (초당 약 3.5회 교대)
-      // 화면 방향 → 방향 프레임: 수평 위주 이동은 측면(e/w), 그 외엔 대각 4방향
-      if (Math.abs(sy) < Math.abs(sx) * 0.4) {
-        this.facing = sx > 0 ? "e" : "w";
-      } else if (sx > 0) this.facing = sy < 0 ? "ne" : "se";
-      else if (sx < 0) this.facing = sy < 0 ? "nw" : "sw";
-      else this.facing = sy < 0 ? "ne" : "se";
+      // 화면 이동 방향을 45°씩 8칸으로 나눈다 (화면 y는 아래가 +).
+      // 위·아래 키가 정면/후면(n·s)을, 대각이 ¾ 뷰(ne·nw·se·sw)를 고른다.
+      this.facing = Game.OCTANTS[
+        Math.round(Math.atan2(sy, sx) / (Math.PI / 4)) & 7
+      ];
     } else {
       this.walkPhase = 0;
     }
@@ -669,9 +681,6 @@ export class Game {
       this.dialogueOpen = false;
     });
   }
-
-  /** 게이트 잠김 설명을 이미 본 퍼즐 (세션 한정 — 재시도마다 대사 반복 방지) */
-  private gateIntroShown = new Set<string>();
 
   /** 장치 도입 대사를 이미 본 퍼즐 (세션 한정) */
   private puzzleIntroShown = new Set<string>();
@@ -861,12 +870,13 @@ export class Game {
       }
     }
     if (gate.code) {
-      if (!this.gateIntroShown.has(puzzleId)) {
-        this.gateIntroShown.add(puzzleId);
-        // 잠금 상황 설명 (첫 회만) — 아이템형 전용 lockedAnchor와 겹치지 않게
-        // promptAnchor가 아닌 lockedAnchor는 코드형 도입 대사로 쓴다
-        await showDialogue(gate.lockedAnchor, this.ui);
-      }
+      // 잠금 상황 설명 — **매번 다시 들려준다.** 코드형 게이트의 단서(어느 기록을 펴야
+      // 하는지)가 이 대사에 있어서, 세션당 한 번만 띄우면 처음에 무심코 넘긴 학생은
+      // 두 번 다시 볼 수 없었다(제보 2026-08-20). 게이트가 열리면 더는 부르지 않으므로
+      // 반복되는 것은 아직 못 푼 동안뿐이다.
+      // (아이템형 전용 lockedAnchor와 겹치지 않게, promptAnchor가 아닌 lockedAnchor를
+      //  코드형 도입 대사로 쓴다)
+      await showDialogue(gate.lockedAnchor, this.ui);
       const ok = await openKeypad(
         {
           code: gate.code,
@@ -1053,108 +1063,18 @@ export class Game {
       }
     } // end: 프리렌더 배경 분기
 
-    // 오브젝트·플레이어를 화면 y 기준 정렬 후 드로우
-    const drawables: { sy: number; draw: () => void }[] = [];
-
-    // 입체 데코 (가구 등): 깊이 정렬에 참여 (배경 모드에서는 그림에 포함되므로 생략)
-    for (const deco of bg ? [] : (this.map.decor ?? [])) {
-      if (deco.flat || deco.light) continue;
-      const [, sy] = worldToScreen(deco.tile[0], deco.tile[1]);
-      drawables.push({
-        sy,
-        draw: () => this.drawDecor(ctx, deco, ox, oy, false),
-      });
-    }
-
-    for (const obj of this.map.objects) {
-      // 완전 봉인 중에만 건너뛴다 — 키 큰 스프라이트가 덮개 위로 삐져나오는 걸 막는다.
-      // ?grid(캘리브레이션)에서는 덮개를 안 그리므로 오브젝트도 숨기면 안 된다 —
-      // 배치를 보려고 켠 모드에서 봉인 안 장치가 통째로 사라졌다.
-      if (!this.debugGrid && this.isSealed(obj.tile[0], obj.tile[1], 0.999))
-        continue;
-      const [sx, sy] = worldToScreen(obj.tile[0], obj.tile[1]);
-      const img = obj.sprite ? this.sprites[obj.sprite] : undefined;
-      if (!img) continue; // 스프라이트 없는 핫스팟(수색 지점) — 스파클 마커가 대신 표시
-      // 잠긴 문·이미 읽은 노트는 흐릿하게
-      const alpha =
-        this.isDoorLocked(obj) ||
-        (obj.noteId && this.collectedNotes.has(obj.noteId))
-          ? 0.4
-          : 1;
-      const os = img.gameScale ?? 1;
-      drawables.push({
-        sy,
-        draw: () => {
-          const w = img.width * os;
-          const h = img.height * os;
-          // 밑변 y. 기본 앵커는 타일 중심 + TILE_H/4 이고, sink로 더 내려 앉힌다
-          // (밑면이 여러 타일에 걸친 장치는 타일 앞 꼭짓점까지 내려와야 바닥에 닿아 보인다).
-          const footY = oy + sy + TILE_H / 4 + (obj.sink ?? 0);
-          if (obj.grounded) {
-            if (obj.pad) this.drawGroundPad(ctx, ox + sx, oy + sy, w * obj.pad);
-            this.drawContactShadow(ctx, ox + sx, footY, w, obj.pad ? 0.45 : 1);
-          }
-          ctx.globalAlpha = alpha;
-          ctx.drawImage(
-            img,
-            Math.round(ox + sx - w / 2),
-            Math.round(footY - h),
-            w,
-            h,
-          );
-          ctx.globalAlpha = 1;
-        },
-      });
-    }
-
-    {
-      const [sx, sy] = worldToScreen(this.player.x, this.player.y);
-      // 방향 × (대기/걷기 순환) 픽셀 프레임. 모션 최소화 선호 시 대기 프레임 고정.
-      // 측면(e/w) 프레임이 없는 스프라이트 세트(.pix 폴백)는 대각으로 대체.
-      let facing: string = this.facing;
-      if (!this.sprites[`char-${this.gender}-${facing}-idle`]) {
-        facing = facing === "e" ? "se" : facing === "w" ? "sw" : "se";
-      }
-      const animate = this.moving && !this.reduceMotion;
-      const cycle = ["a", "b", "c", "d"].filter(
-        (f) => this.sprites[`char-${this.gender}-${facing}-${f}`],
-      );
-      const frame =
-        animate && cycle.length > 0
-          ? cycle[Math.floor(this.walkPhase) % cycle.length]
-          : "idle";
-      const img = this.sprites[`char-${this.gender}-${facing}-${frame}`];
-      const s = img?.gameScale ?? 1;
-      drawables.push({
-        sy: sy + 0.1, // 동률일 때 플레이어를 앞에
-        draw: () => {
-          if (!img) return;
-          const w = img.width * s;
-          const h = img.height * s;
-          ctx.drawImage(
-            img,
-            Math.round(ox + sx - w / 2),
-            Math.round(oy + sy + 8 - h),
-            w,
-            h,
-          );
-        },
-      });
-    }
-
-    drawables.sort((a, b) => a.sy - b.sy).forEach((d) => d.draw());
-
-    // (유리벽 재드로우 판 background.overpaint는 삭제했다 — 그림 안 구조물 뒤에
-    //  스프라이트를 두려면 판을 세우는 대신 **그림 자체를 상호작용 지점으로** 쓴다.
-    //  청음실 녹음 콘솔이 그 사례: sprite 없이 tile만 두고 아트의 책상을 가리킨다.)
-
     // 봉인 구역 — 배경 그림 위를 타일 사각형 모양(아이소 평행사변형)으로 덮는다.
     // 어둠 오버레이보다 **먼저** 그려 암실+봉인이 겹쳐도 색이 튀지 않게 한다.
     // 캘리브레이션 모드(?grid)에선 배치를 봐야 하므로 끔.
-    // 어둠 전체 → 격벽 전체 **2패스**. 한 패스로 구역을 하나씩 끝내면 뒤 구역의 어둠이
-    // 앞 구역 격벽 위를 덮어 이음매에 톤 차이가 생긴다(청음실 부스+앞마당 실측).
+    // 어둠 전체 → 경계선 전체 **2패스**. 한 패스로 구역을 하나씩 끝내면 뒤 구역의 어둠이
+    // 앞 구역 경계선 위를 덮어 이음매에 톤 차이가 생긴다(청음실 부스+앞마당 실측).
+    //
+    // ⚠ **반투명 장막을 쓰지 않는다** — 그림이 비쳐 보이면 "덜 그려진 방"으로 읽힌다
+    //   (2026-08-14 제보). 바닥은 완전히 덮고, 위쪽 lift 구간에서만 짧게 페이드해
+    //   딱딱한 윗변을 없앤다. 차단 신호도 회색 격벽+빨강 줄무늬(SF 화풍이라 그림과 따로 놀았다)
+    //   대신 **경계에 놓인 호박색 등불선** 하나로 줄였다.
     if (!this.debugGrid) {
-      for (const pass of ["dark", "walls"] as const)
+      for (const pass of ["dark", "edge"] as const)
         for (const s of this.map.sealed ?? []) {
           const a = this.sealAlpha.get(s.id) ?? 0;
           if (a <= 0) continue;
@@ -1190,14 +1110,17 @@ export class Game {
             ];
 
             if (pass === "dark") {
-              // ② 어둠 — 바닥은 짙고 위로 갈수록 사라지는 세로 그라데이션.
+              // ② 어둠 — 바닥부터 위로 **불투명**하게 채우고, 맨 위 lift 구간만 페이드.
               //    균일 검정 + 딱딱한 윗변이 "상자"로 읽히던 원인이라 윗변을 없앤다.
               const top = Math.min(n[1], e[1], w[1]) - lift;
               const bottom = sth[1];
+              const span = Math.max(1, bottom - top);
+              // 페이드가 끝나는 지점 = lift 띠의 아래쪽. 바닥 쪽은 전부 불투명이다.
+              const fade = Math.min(0.6, (lift / span) * 0.95);
               const g = ctx.createLinearGradient(0, oy + top, 0, oy + bottom);
               g.addColorStop(0, "rgba(6, 9, 15, 0)");
-              g.addColorStop(0.55, `rgba(6, 9, 15, ${0.85 * a})`);
-              g.addColorStop(1, `rgba(6, 9, 15, ${0.97 * a})`);
+              g.addColorStop(fade, `rgba(6, 9, 15, ${a})`);
+              g.addColorStop(1, `rgba(6, 9, 15, ${a})`);
               ctx.fillStyle = g;
               // 다각형은 아이소 기둥 **실루엣(6점)** — 화면 꼭대기까지 수직 기둥으로 채우면
               // 좌우에 긴 수직 절단선이 생겨 열린 구역 장치를 자른다(모바일 실측).
@@ -1218,55 +1141,223 @@ export class Game {
               continue;
             }
 
-            // ③ 차단 격벽 — 열린 쪽과 봉인 쪽의 경계선(북서·북동 두 변) 위에 서 있는
-            //    허리 높이 판. 상단에 경고 줄무늬. "왜 못 지나가는지"를 이 판이 말한다.
-            //    단, **다른 봉인 구역과 맞닿은 안쪽 경계에는 세우지 않는다** — 두 구역이
-            //    가운데 격벽으로 갈려 하나의 막힌 구역으로 안 읽혔다(청음실 실측).
-            //    변 바로 바깥을 찍어 그쪽도 봉인이면 그 변은 건너뛴다.
+            // ③ 경계 등불선 — 봉인 구역이 **열린 바닥과 맞닿는 변**에만 놓이는 호박색 선.
+            //    "여기서 막혔다"를 말하되 그림의 등불·놋쇠 톤과 같은 계열로 둔다.
+            //    네 변 전부 후보다 — 학생이 남쪽에서 걸어와 막히는 변(남·동)에 선이 없으면
+            //    덮개 아랫변이 그냥 잘린 슬래브로 보인다(2026-08-14 제보 "공중에 떠 있다").
+            //    단 ① 변 바깥이 **방 밖**(뒷벽·격자 밖)이면 긋지 않는다 — 벽 위 선은 무의미.
+            //    ② 바깥이 **다른 봉인 구역**이어도 긋지 않는다 — 두 구역이 가운데 선으로
+            //    갈려 하나의 막힌 구역으로 안 읽혔다(청음실 실측).
             const EDGE_PROBE = 0.15;
-            const walls: {
+            const inRoom = (px: number, py: number) =>
+              px >= -0.5 && px <= cols - 0.5 && py >= -0.5 && py <= rows - 0.5;
+            const edges: {
               p0: [number, number];
               p1: [number, number];
               outside: [number, number];
             }[] = [
-              { p0: w, p1: n, outside: [r.x0 - EDGE_PROBE, (r.y0 + r.y1) / 2] },
-              { p0: n, p1: e, outside: [(r.x0 + r.x1) / 2, r.y0 - EDGE_PROBE] },
+              { p0: w, p1: n, outside: [r.x0 - EDGE_PROBE, (r.y0 + r.y1) / 2] }, // 서
+              { p0: n, p1: e, outside: [(r.x0 + r.x1) / 2, r.y0 - EDGE_PROBE] }, // 북
+              { p0: e, p1: sth, outside: [r.x1 + EDGE_PROBE, (r.y0 + r.y1) / 2] }, // 동
+              { p0: sth, p1: w, outside: [(r.x0 + r.x1) / 2, r.y1 + EDGE_PROBE] }, // 남
             ];
-            for (const { p0, p1, outside } of walls) {
+            for (const { p0, p1, outside } of edges) {
+              if (!inRoom(outside[0], outside[1])) continue;
               if (this.isSealed(outside[0], outside[1])) continue;
-              // 판 몸통
               ctx.beginPath();
               ctx.moveTo(ox + p0[0], oy + p0[1]);
               ctx.lineTo(ox + p1[0], oy + p1[1]);
-              ctx.lineTo(ox + p1[0], oy + p1[1] - BULKHEAD_H);
-              ctx.lineTo(ox + p0[0], oy + p0[1] - BULKHEAD_H);
-              ctx.closePath();
-              ctx.fillStyle = `rgba(66, 69, 77, ${0.92 * a})`; // console-body
-              ctx.fill();
-              ctx.strokeStyle = `rgba(226, 233, 246, ${0.5 * a})`; // text
-              ctx.lineWidth = 1.5;
+              ctx.strokeStyle = `rgba(255, 209, 102, ${0.85 * a})`; // success — 등불 호박색
+              ctx.lineWidth = 4;
+              ctx.shadowColor = `rgba(255, 209, 102, ${0.7 * a})`;
+              ctx.shadowBlur = 18;
               ctx.stroke();
-              // 상단 경고 줄무늬 — 변을 따라 danger 사선을 일정 간격으로
-              const segs = 14;
-              ctx.strokeStyle = `rgba(230, 57, 70, ${0.85 * a})`; // danger
-              ctx.lineWidth = 3;
-              ctx.beginPath();
-              for (let i = 0; i < segs; i += 2) {
-                const t0 = i / segs;
-                const t1 = (i + 1) / segs;
-                const x0 = p0[0] + (p1[0] - p0[0]) * t0;
-                const y0 = p0[1] + (p1[1] - p0[1]) * t0;
-                const x1 = p0[0] + (p1[0] - p0[0]) * t1;
-                const y1 = p0[1] + (p1[1] - p0[1]) * t1;
-                ctx.moveTo(ox + x0, oy + y0 - BULKHEAD_H + 5);
-                ctx.lineTo(ox + x1, oy + y1 - BULKHEAD_H + 5);
-              }
-              ctx.stroke();
+              ctx.shadowBlur = 0;
             }
             ctx.restore();
           }
         }
     }
+
+
+    // 오브젝트·플레이어를 화면 y 기준 정렬 후 드로우
+    const drawables: { sy: number; draw: () => void }[] = [];
+
+    // 앞가림 구조물 — 배경 그림에서 그 조각만 오려 **깊이 정렬에 참여**시킨다.
+    // 통짜 배경은 항상 캐릭터 밑에 깔리므로, 나무 뒤로 걸어가도 캐릭터가 나무 위에 떴다.
+    // 정렬 키는 구조물의 앞(남쪽) 끝이라 앞에 선 캐릭터는 그대로 보인다.
+    if (bg && this.sprites[bg.sprite]) {
+      const bgImg = this.sprites[bg.sprite];
+      const bs = bg.scale ?? 1;
+      const bsy = bg.scaleY ?? bs;
+      const artX = (ax: number) => ox + bg.offsetX + ax * bs;
+      const artY = (ay: number) => oy + bg.offsetY + ay * bsy;
+      for (const oc of bg.occluders ?? []) {
+        const [, sy] = worldToScreen(oc.base[0], oc.base[1]);
+        drawables.push({
+          sy,
+          draw: () => {
+            ctx.save();
+            ctx.beginPath();
+            for (const shape of oc.shapes) {
+              if ("ellipse" in shape) {
+                const [cx, cy, rx, ry] = shape.ellipse;
+                // ⚠ ellipse()는 현재 점에서 선을 잇는다 — moveTo로 서브패스를 끊어야 합집합이 된다
+                ctx.moveTo(artX(cx + rx), artY(cy));
+                ctx.ellipse(artX(cx), artY(cy), rx * bs, ry * bsy, 0, 0, Math.PI * 2);
+              } else {
+                const [rx0, ry0, rw, rh] = shape.rect;
+                ctx.rect(artX(rx0), artY(ry0), rw * bs, rh * bsy);
+              }
+            }
+            ctx.clip();
+            // 완전 불투명하게 덮으면 나무 뒤에 선 캐릭터가 통째로 사라진다(스폰 지점에서 실측).
+            // 같은 그림을 같은 자리에 겹치는 것이라 **배경 픽셀은 알파와 무관하게 그대로**이고,
+            // 밑에 깔린 캐릭터만 잎 사이로 비친 것처럼 남는다.
+            // 매 프레임 도는 코드라 전체 그림이 아니라 **실루엣 bbox 원본 사각형만** 다시 그린다.
+            let [bx0, by0, bx1, by1] = [Infinity, Infinity, -Infinity, -Infinity];
+            for (const shape of oc.shapes) {
+              const [sx0, sy0, sx1, sy1] =
+                "ellipse" in shape
+                  ? [
+                      shape.ellipse[0] - shape.ellipse[2],
+                      shape.ellipse[1] - shape.ellipse[3],
+                      shape.ellipse[0] + shape.ellipse[2],
+                      shape.ellipse[1] + shape.ellipse[3],
+                    ]
+                  : [
+                      shape.rect[0],
+                      shape.rect[1],
+                      shape.rect[0] + shape.rect[2],
+                      shape.rect[1] + shape.rect[3],
+                    ];
+              bx0 = Math.min(bx0, sx0);
+              by0 = Math.min(by0, sy0);
+              bx1 = Math.max(bx1, sx1);
+              by1 = Math.max(by1, sy1);
+            }
+            ctx.globalAlpha = OCCLUDER_ALPHA;
+            ctx.drawImage(
+              bgImg,
+              bx0,
+              by0,
+              bx1 - bx0,
+              by1 - by0,
+              artX(bx0),
+              artY(by0),
+              (bx1 - bx0) * bs,
+              (by1 - by0) * bsy,
+            );
+            ctx.globalAlpha = 1;
+            ctx.restore();
+          },
+        });
+      }
+    }
+
+    // 입체 데코 (가구 등): 깊이 정렬에 참여 (배경 모드에서는 그림에 포함되므로 생략)
+    for (const deco of bg ? [] : (this.map.decor ?? [])) {
+      if (deco.flat || deco.light) continue;
+      const [, sy] = worldToScreen(deco.tile[0], deco.tile[1]);
+      drawables.push({
+        sy,
+        draw: () => this.drawDecor(ctx, deco, ox, oy, false),
+      });
+    }
+
+    for (const obj of this.map.objects) {
+      // 완전 봉인 중에만 건너뛴다 — 키 큰 스프라이트가 덮개 위로 삐져나오는 걸 막는다.
+      // ?grid(캘리브레이션)에서는 덮개를 안 그리므로 오브젝트도 숨기면 안 된다 —
+      // 배치를 보려고 켠 모드에서 봉인 안 장치가 통째로 사라졌다.
+      if (!this.debugGrid && this.isSealed(obj.tile[0], obj.tile[1], 0.999))
+        continue;
+      const [sx, sy] = worldToScreen(obj.tile[0], obj.tile[1]);
+      const img = obj.sprite ? this.sprites[obj.sprite] : undefined;
+      if (!img) continue; // 스프라이트 없는 핫스팟(수색 지점) — 스파클 마커가 대신 표시
+      // 잠긴 문·이미 읽은 노트는 흐릿하게
+      const alpha =
+        this.isDoorLocked(obj) ||
+        (obj.noteId && this.collectedNotes.has(obj.noteId))
+          ? 0.4
+          : 1;
+      const os = img.gameScale ?? 1;
+      drawables.push({
+        // 정렬 키는 타일 중심이 아니라 **스프라이트가 바닥에 닿는 줄**이다(그리는 자리와 같은 값).
+        // 중심으로 정렬하면 장치 타일에 그대로 올라선 캐릭터가 장치 앞으로 나와,
+        // 다리는 장치를 뚫고 발이 장치 아래로 삐져나온다 — 장치가 공중에 뜬 것처럼 보인다.
+        sy: sy + TILE_H / 4 + (obj.sink ?? 0),
+        draw: () => {
+          const w = img.width * os;
+          const h = img.height * os;
+          // 밑변 y. 기본 앵커는 타일 중심 + TILE_H/4 이고, sink로 더 내려 앉힌다
+          // (밑면이 여러 타일에 걸친 장치는 타일 앞 꼭짓점까지 내려와야 바닥에 닿아 보인다).
+          const footY = oy + sy + TILE_H / 4 + (obj.sink ?? 0);
+          if (obj.grounded) {
+            if (obj.pad) this.drawGroundPad(ctx, ox + sx, oy + sy, w * obj.pad);
+            this.drawContactShadow(ctx, ox + sx, footY, w, obj.pad ? 0.45 : 1);
+          }
+          ctx.globalAlpha = alpha;
+          ctx.drawImage(
+            img,
+            Math.round(ox + sx - w / 2),
+            Math.round(footY - h),
+            w,
+            h,
+          );
+          ctx.globalAlpha = 1;
+        },
+      });
+    }
+
+    {
+      const [sx, sy] = worldToScreen(this.player.x, this.player.y);
+      // 방향 × (대기/걷기 순환) 프레임. 모션 최소화 선호 시 대기 프레임 고정.
+      // 8방향이 다 없는 스프라이트 세트(대각 4방향뿐인 .pix 폴백)는 가까운 대각으로 대체한다.
+      let facing: string = this.facing;
+      if (!this.sprites[`char-${this.gender}-${facing}-idle`]) {
+        const near: Record<string, string> = {
+          n: "ne", s: "se", e: "se", w: "sw",
+          ne: "ne", nw: "nw", se: "se", sw: "sw",
+        };
+        facing = near[facing] ?? "se";
+      }
+      const animate = this.moving && !this.reduceMotion;
+      const cycle = ["a", "b", "c", "d"].filter(
+        (f) => this.sprites[`char-${this.gender}-${facing}-${f}`],
+      );
+      const frame =
+        animate && cycle.length > 0
+          ? cycle[Math.floor(this.walkPhase) % cycle.length]
+          : "idle";
+      const img = this.sprites[`char-${this.gender}-${facing}-${frame}`];
+      const s = img?.gameScale ?? 1;
+      drawables.push({
+        sy: sy + 0.1, // 동률일 때 플레이어를 앞에
+        draw: () => {
+          if (!img) return;
+          const w = img.width * s;
+          const h = img.height * s;
+          // 캐릭터만 보간을 켠다. 전역은 nearest(픽셀아트 타일·.pix 캐릭터용)인데,
+          // 고해상도 일러스트 캐릭터를 그 상태로 축소하면 가장자리가 계단처럼 부서진다.
+          // (배경이 매끈한 카툰 아트일 때 캐릭터만 도트로 튀는 문제 — 2026-08-11)
+          ctx.imageSmoothingEnabled = true;
+          ctx.drawImage(
+            img,
+            Math.round(ox + sx - w / 2),
+            Math.round(oy + sy + 8 - h),
+            w,
+            h,
+          );
+          ctx.imageSmoothingEnabled = false;
+        },
+      });
+    }
+
+    drawables.sort((a, b) => a.sy - b.sy).forEach((d) => d.draw());
+
+    // (유리벽 재드로우 판 background.overpaint는 삭제했다 — 그림 안 구조물 뒤에
+    //  스프라이트를 두려면 판을 세우는 대신 **그림 자체를 상호작용 지점으로** 쓴다.
+    //  청음실 녹음 콘솔이 그 사례: sprite 없이 tile만 두고 아트의 책상을 가리킨다.)
 
     // 어둠 오버레이 (1막: 플레이어 주변만 희미하게 보임) — 캘리브레이션 모드(?grid)에선 끔
     if (this.darkness > 0 && !this.debugGrid) {
@@ -1321,12 +1412,18 @@ export class Game {
       ctx.restore();
     }
 
-    // 수색 스파클 마커 — 아직 조사하지 않은 수색 지점에 반짝임 (어둠 위에 그려
+    // 발견 스파클 마커 — 아직 안 집은 수색 지점·연구노트에 반짝임 (어둠 위에 그려
     // 암실에서도 "저기 뭔가 있다"가 보이는 방탈출 연출)
+    // ⚠ **노트도 여기 걸린다.** 노트 핫스팟은 스프라이트가 없어(배경 그림의 가구를
+    // 가리키는 설계) 마커까지 없으면 화면에 아무 표시도 남지 않는다 — 빈 바닥에 놓인
+    // 노트는 붙어서 라벨이 뜨기 전까지 보이지 않았다(제보 2026-08-18).
     {
       const t = performance.now() / 1000;
       for (const obj of this.map.objects) {
-        if (!obj.search || this.searched.has(obj.id)) continue;
+        const pending = obj.search
+          ? !this.searched.has(obj.id)
+          : !!obj.noteId && !this.collectedNotes.has(obj.noteId);
+        if (!pending) continue;
         // 스파클은 어둠 오버레이 위에 그려지므로 덮개로 가려지지 않는다 — 알파와 무관하게
         // 페이드가 끝날 때까지 숨긴다(봉인 뒤에서 반짝임이 새어 나오던 문제).
         if (!this.debugGrid && this.isSealed(obj.tile[0], obj.tile[1]))

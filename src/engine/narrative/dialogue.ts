@@ -5,6 +5,7 @@
  */
 import { storyData, type StoryEntry } from "../../data/story-data";
 import { Sfx } from "../audio/sfx";
+import { setInline } from "./markup";
 
 /** story.md 앵커로 엔트리 조회. `story.md#foo` · `#foo` · `foo` 셋 다 같은 키로 본다 */
 export function getEntry(anchor: string): StoryEntry | undefined {
@@ -52,7 +53,7 @@ function showDialogueNow(anchor: string, host: HTMLElement): Promise<void> {
 
     const text = document.createElement("p");
     text.className = "dialogue-text";
-    text.textContent = entry.text;
+    setInline(text, entry.text);
 
     const hint = document.createElement("div");
     hint.className = "dialogue-hint";
@@ -79,7 +80,12 @@ function showDialogueNow(anchor: string, host: HTMLElement): Promise<void> {
       settle();
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.code === "Space" || e.code === "Enter" || e.code === "KeyE") advance();
+      if (e.code === "Space" || e.code === "Enter" || e.code === "KeyE") {
+        // preventDefault 없으면 브라우저 기본 동작이 포커스된 버튼(마지막으로 클릭한
+        // 퍼즐 버튼 등)을 다시 눌러, 대사를 넘길 때마다 유령 클릭이 난다
+        e.preventDefault();
+        advance();
+      }
     };
     const observer = new MutationObserver(() => {
       if (!box.isConnected) settle();

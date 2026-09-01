@@ -602,7 +602,56 @@ body {
 .note-body {
   line-height: 1.8;
   font-size: 0.92rem;
-  white-space: pre-line;
+}
+.note-body p {
+  margin: 0 0 0.55em;
+}
+.note-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* 노트 안의 목록·표 — story.md의 `- `/`|` 줄을 note.ts가 블록으로 세운다 */
+.note-list {
+  margin: 0.35em 0 0.7em;
+  padding-left: 1.2em;
+}
+.note-list li {
+  margin-bottom: 0.3em;
+}
+.note-table {
+  margin: 0.35em 0 0.7em;
+  border-collapse: collapse;
+  line-height: 1.5;
+}
+.note-table th,
+.note-table td {
+  border: 1px solid var(--color-line);
+  padding: 0.25em 0.9em;
+  text-align: center;
+}
+.note-table th {
+  color: var(--color-hologram);
+  font-weight: 600;
+  background: rgba(77, 168, 255, 0.08);
+}
+
+/* ==강조== — 퍼즐의 답을 직접 정하는 문구. 노트·대사·발견·힌트·원리 카드 공통.
+   분위기용으로 쓰면 표시가 흔해져 단서 구실을 못 한다(markup.ts 주석 참고) */
+mark.key-phrase {
+  background: none;
+  color: var(--color-hologram);
+  font-weight: 600;
+}
+
+/* 상시 목표 배너 — 퍼즐이 "지금 무엇을 맞춰야 하는지"를 늘 띄워 둔다.
+   실플레이에서 조작법은 알아도 목표를 잊는 일이 잦아 생긴 자리다. */
+.puzzle-goal {
+  margin: 0 0 0.45rem;
+  padding: 0.4rem 0.6rem;
+  border-left: 3px solid var(--color-hologram);
+  background: color-mix(in srgb, var(--color-bg-deep) 88%, var(--color-hologram));
+  font-size: 0.92rem;
+  line-height: 1.5;
 }
 
 /* 닫기 버튼 줄 — 키 안내를 버튼 왼쪽에 나란히 */
@@ -913,6 +962,17 @@ body {
 }
 .keypad-key:active {
   background: color-mix(in srgb, var(--color-hologram) 25%, transparent);
+}
+
+/* 확인·지우기는 키 줄과 섞이지 않게 제 줄에 둔다 — 여덟 칸 격자에 밀어 넣으면
+   라벨이 접히고 키 하나를 잘못 누르기 쉽다 */
+.keypad-actions {
+  display: flex;
+  gap: 0.3rem;
+  margin-top: 0.3rem;
+}
+.keypad-actions .keypad-action {
+  flex: 1 1 0;
 }
 
 /* ── 건반 스킨 (3번 방 멜로디 게이트) ──

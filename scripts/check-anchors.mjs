@@ -11,9 +11,10 @@
  * 사용: node scripts/check-anchors.mjs
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const ROOT = new URL("..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 /** "story.md#foo" · "#foo" · "foo" → "foo" */
 const norm = (a) => a.replace(/^story\.md/, "").replace(/^#/, "");

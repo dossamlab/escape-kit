@@ -16,7 +16,10 @@
 | `npm run story` | docs/story.md → src/data/story-data.ts 재생성 |
 | `npm run assets` | assets-src/ SVG → public/assets/ PNG (토큰 치환 포함) |
 | `npm run test:e2e` | Playwright 전체 (desktop-chrome + mobile) |
-| `bash scripts/verify.sh quick` | story + anchors + layout + typecheck + build (매 작업 후) |
+| `npm run reach` | 스폰에서 모든 오브젝트에 걸어서 닿는지 검산 (`blocks`를 건드렸으면 필수) |
+| `npm run layout` | 오브젝트 간격·근접 판정 검산 |
+| `npm run anchors` | story.md 앵커 참조 검산 |
+| `bash scripts/verify.sh quick` | story + anchors + layout + reach + typecheck + build (매 작업 후) |
 | `bash scripts/verify.sh full` | quick + assets + e2e 2종 (퍼즐 완성 시) |
 
 e2e 부분 실행 — 전체 스위트는 수 분이 걸리므로 평소엔 관련 spec 하나만 돌린다:
@@ -49,6 +52,17 @@ npx playwright test tests/e2e/search.spec.ts --project=desktop-chrome --retries=
 - 퍼즐 추가는 add-puzzle 스킬 절차를 따른다: 설계(puzzle-designer) → 승인 → 에셋(asset-artist)
   → 구현(puzzle-builder) → 교과 검수(`<교과>-reviewer`) → 실플레이(playtester) → 수정 루프.
 - DoD: 데스크톱·모바일 두 Playwright 프로젝트에서 e2e 통과.
+
+## 좌표는 눈대중하지 않는다
+
+화면에서 픽셀을 눈으로 읽으면 틀린다 — 실측으로 45px(≈0.85타일) 어긋났다. 믿을 수
+있는 것은 **같은 그림 위에 찍은 점끼리의 상대 비교**와 **사용자가 직접 찍은 좌표**뿐이다.
+
+- 걷기 금지 칸·핫스팟은 `tools/tiles.html`에서 칠한다 → `scripts/blocks-from-mark.mjs`가 사각형으로 묶는다
+- 배치가 맞았는지는 `scripts/annotate-room.mjs`로 그림 위에 얹어 확인한다
+- `blocks`를 늘렸으면 **반드시** `npm run reach` — 구역이 통째로 막혀도 타입 검사·e2e에는 안 잡힌다
+
+자세한 절차는 `.claude/skills/relayout-room/`.
 
 ## 아키텍처 — 여러 파일을 읽어야 보이는 것
 

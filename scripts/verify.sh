@@ -16,6 +16,9 @@ node scripts/check-anchors.mjs
 echo "── layout (간격·근접 판정) ─────────"
 node scripts/check-layout.mjs 0.4
 
+echo "── reach (걸어서 닿는가) ───────────"
+node scripts/check-reach.mjs
+
 echo "── typecheck ──────────────────────"
 npm run --silent typecheck
 
