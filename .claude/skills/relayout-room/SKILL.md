@@ -39,6 +39,7 @@ description: 방 크기·오브젝트 좌표 변경 표준 절차. 비례 환산
 ### 1. `tools/tiles.html` — 걷기 영역·핫스팟을 그림 위에서 직접 찍는다
 
 개발 서버로 연다: `http://localhost:5373/tools/tiles.html`
+(주소는 `npm run dev` 시작 로그에도 찍히고, `npm run tiles`가 열기 전 조건까지 검사해 준다.)
 (Vite 개발 서버는 루트 파일을 그대로 서빙한다. `public/`이 아니라 `tools/`에 두는 이유는
 **빌드 산출물에 안 들어가게** 하려는 것이다 — `dist`에는 `public/`만 복사된다.)
 

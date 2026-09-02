@@ -13,6 +13,7 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "assets": "node scripts/build-assets.mjs",
+    "tiles": "node scripts/tiles.mjs",
     "story": "node scripts/build-story.mjs",
     "test:e2e": "playwright test",
     "anchors": "node scripts/check-anchors.mjs",
