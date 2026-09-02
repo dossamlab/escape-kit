@@ -1,0 +1,839 @@
+<title>방탈출 저작 순서</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+
+<style>
+  :root {
+    /* 게임의 design-tokens.json에서 온 값 — harness-design.html과 같은 판이다 */
+    --ground: #191d27;
+    --surface: #212531;
+    --raised: #2b3140;
+    --rule: #3d5a80;
+    --rule-soft: #2c3a4f;
+    --accent: #4da8ff;
+    --accent-dim: #2f6ea8;
+    --signal: #ffd166;
+    --signal-dim: #7a6330;
+    --alert: #e2706c;
+    --ink: #dce7f5;
+    --ink-dim: #8fa3bd;
+    --ink-faint: #61728a;
+
+    --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", "SFMono-Regular", Consolas, Menlo, monospace;
+    --sans: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, -apple-system, sans-serif;
+
+    --frame: 1080px;
+    --prose: 68ch;
+    color-scheme: dark;
+  }
+
+  /* 청사진 인화지 — 같은 색상환의 반대편 (harness-design.html과 동일) */
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --ground: #e9edf5;
+      --surface: #ffffff;
+      --raised: #f2f6fc;
+      --rule: #b3c5de;
+      --rule-soft: #d3dfef;
+      --accent: #1d5fb5;
+      --accent-dim: #6f96c8;
+      --signal: #8a5c00;
+      --signal-dim: #c9a44a;
+      --alert: #b3251f;
+      --ink: #16202e;
+      --ink-dim: #4f6079;
+      --ink-faint: #7d8ca3;
+      color-scheme: light;
+    }
+  }
+
+  :root[data-theme="light"] {
+    --ground: #e9edf5;
+    --surface: #ffffff;
+    --raised: #f2f6fc;
+    --rule: #b3c5de;
+    --rule-soft: #d3dfef;
+    --accent: #1d5fb5;
+    --accent-dim: #6f96c8;
+    --signal: #8a5c00;
+    --signal-dim: #c9a44a;
+    --alert: #b3251f;
+    --ink: #16202e;
+    --ink-dim: #4f6079;
+    --ink-faint: #7d8ca3;
+    color-scheme: light;
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #191d27;
+    --surface: #212531;
+    --raised: #2b3140;
+    --rule: #3d5a80;
+    --rule-soft: #2c3a4f;
+    --accent: #4da8ff;
+    --accent-dim: #2f6ea8;
+    --signal: #ffd166;
+    --signal-dim: #7a6330;
+    --alert: #e2706c;
+    --ink: #dce7f5;
+    --ink-dim: #8fa3bd;
+    --ink-faint: #61728a;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+    /* 한글은 어절 단위로 끊는다 — 없으면 "대 / 부분"처럼 단어 중간이 갈린다 */
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+
+  .frame { max-width: var(--frame); margin: 0 auto; padding: 0 28px; }
+  .prose { max-width: var(--prose); }
+  .stack { display: flex; flex-direction: column; gap: 18px; }
+
+  a { color: var(--accent); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.86em;
+    color: var(--ink);
+    background: var(--raised);
+    border: 1px solid var(--rule-soft);
+    border-radius: 3px;
+    padding: 0.08em 0.35em;
+    white-space: nowrap;
+  }
+  strong { font-weight: 700; color: var(--ink); }
+  p { margin: 0 0 16px; }
+  p:last-child { margin-bottom: 0; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 14px;
+  }
+
+  /* ── 표제부 ────────────────────────────────────────── */
+  header.sheet {
+    border-bottom: 1px solid var(--rule);
+    background:
+      linear-gradient(to bottom, color-mix(in srgb, var(--signal) 8%, transparent), transparent 72%),
+      var(--ground);
+  }
+  .sheet-inner { padding-top: 76px; padding-bottom: 52px; }
+
+  h1 {
+    font-size: clamp(32px, 5.8vw, 56px);
+    line-height: 1.1;
+    letter-spacing: -0.035em;
+    font-weight: 800;
+    margin: 0 0 20px;
+    text-wrap: balance;
+  }
+  .lede { font-size: clamp(17px, 2vw, 20px); color: var(--ink-dim); max-width: 60ch; margin: 0; }
+  .lede b { color: var(--ink); font-weight: 600; }
+
+  .specs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr));
+    gap: 0;
+    margin: 40px 0 0;
+    border-top: 1px solid var(--rule-soft);
+  }
+  .specs div { padding: 16px 18px 16px 0; border-bottom: 1px solid var(--rule-soft); }
+  .specs dt {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 6px;
+  }
+  .specs dd { margin: 0; font-size: 15px; line-height: 1.55; }
+  .specs dd small { display: block; color: var(--ink-dim); font-size: 13px; }
+
+  section { padding: 62px 0; border-bottom: 1px solid var(--rule-soft); }
+  h2 {
+    font-size: clamp(24px, 3.2vw, 33px);
+    line-height: 1.22;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+    margin: 0 0 20px;
+    text-wrap: balance;
+  }
+  h3 { font-size: 19px; line-height: 1.4; font-weight: 700; margin: 0 0 10px; }
+
+  /* ── 도해 ──────────────────────────────────────────── */
+  .figure { margin: 30px 0 0; }
+  .figure svg { display: block; width: 100%; height: auto; }
+  .scroller { overflow-x: auto; }
+  .scroller > svg { min-width: 660px; }
+  .caption {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin: 12px 0 0;
+    line-height: 1.6;
+  }
+
+  .svg-box { fill: var(--surface); stroke: var(--rule); }
+  .svg-live { fill: var(--raised); stroke: var(--signal); }
+  .svg-open { fill: none; stroke: var(--rule-soft); }
+  .svg-ink { fill: var(--ink); }
+  .svg-dim { fill: var(--ink-dim); }
+  .svg-accent { fill: var(--accent); }
+  .svg-signal { fill: var(--signal); }
+  .svg-flow { stroke: var(--signal); fill: none; }
+  .svg-back { stroke: var(--accent-dim); fill: none; stroke-dasharray: 4 4; }
+  .svg-t { font-family: var(--sans); font-size: 14px; font-weight: 600; }
+  .svg-s { font-family: var(--mono); font-size: 11px; }
+  .svg-n { font-family: var(--mono); font-size: 12px; font-weight: 600; }
+
+  /* ── 단계 카드 ─────────────────────────────────────── */
+  .steps { display: flex; flex-direction: column; gap: 22px; margin-top: 34px; }
+  .step {
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr);
+    gap: 20px;
+    background: var(--surface);
+    border: 1px solid var(--rule-soft);
+    border-left: 2px solid var(--signal-dim);
+    border-radius: 4px;
+    padding: 22px 24px;
+  }
+  .step-n {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--signal);
+    border-top: 1px solid var(--signal-dim);
+    padding-top: 6px;
+    letter-spacing: 0.06em;
+  }
+  .step h3 code { white-space: normal; }
+  .step p { max-width: 68ch; }
+
+  ul { margin: 0 0 16px; padding-left: 20px; }
+  ul:last-child { margin-bottom: 0; }
+  li { margin: 0 0 7px; max-width: 66ch; }
+  li::marker { color: var(--ink-faint); }
+
+  /* ── 명령 블록 ─────────────────────────────────────── */
+  pre {
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.7;
+    background: var(--raised);
+    border: 1px solid var(--rule-soft);
+    border-radius: 4px;
+    padding: 14px 16px;
+    margin: 0 0 16px;
+    overflow-x: auto;
+  }
+  pre code { background: none; border: 0; padding: 0; font-size: inherit; white-space: pre; }
+  pre .c { color: var(--ink-faint); }
+
+  /* ── 표 ────────────────────────────────────────────── */
+  .tablewrap { overflow-x: auto; margin-top: 26px; }
+  table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 15px; }
+  th, td { text-align: left; padding: 11px 16px 11px 0; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+  th {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 400;
+    border-bottom-color: var(--rule);
+  }
+  td small { color: var(--ink-dim); }
+
+  /* ── 주의 ──────────────────────────────────────────── */
+  .traps { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 16px; margin-top: 30px; }
+  .trap {
+    background: var(--surface);
+    border: 1px solid var(--rule-soft);
+    border-top: 2px solid var(--alert);
+    border-radius: 4px;
+    padding: 18px 20px;
+  }
+  .trap h3 { font-size: 16px; margin-bottom: 8px; }
+  .trap p { font-size: 14.5px; color: var(--ink-dim); margin: 0; }
+  .trap p b { color: var(--ink); }
+
+  footer { padding: 46px 0 76px; color: var(--ink-faint); font-size: 14px; }
+
+  @media (max-width: 620px) {
+    .frame { padding: 0 20px; }
+    section { padding: 46px 0; }
+    .step { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 20px 18px; }
+    .step-n { border-top: 0; padding-top: 0; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    a { transition: color 120ms ease; }
+  }
+</style>
+
+<header class="sheet">
+  <div class="frame sheet-inner">
+    <p class="eyebrow">사용법 · escape-kit</p>
+    <h1>교과 하나를 방 하나로 옮기는 순서</h1>
+    <p class="lede">
+      이 키트에는 물리 방 하나(「이름 없는 방」 — 탄성파와 소리)가 예제로 들어 있다.
+      <b>그것을 지우고 자기 교과로 다시 채우는 것</b>이 사용법의 전부다.
+      코드는 거의 건드리지 않는다 — 바꾸는 것은 데이터와 검수자다.
+    </p>
+
+    <dl class="specs">
+      <div>
+        <dt>필요한 것</dt>
+        <dd>Node.js 20.19+ · git<small>그리고 Claude Code</small></dd>
+      </div>
+      <div>
+        <dt>표준 슬레이트</dt>
+        <dd>방 1개 = 퍼즐 4개 + 콘솔 1개<small>퍼즐 넷이 열쇠를 한 조각씩 낸다</small></dd>
+      </div>
+      <div>
+        <dt>완료 기준</dt>
+        <dd>데스크톱 · 모바일 e2e 전부 통과<small>둘 다 그린이어야 끝이다</small></dd>
+      </div>
+      <div>
+        <dt>런타임 의존성</dt>
+        <dd>0개<small>브라우저에서 돌고 설치가 필요 없다</small></dd>
+      </div>
+    </dl>
+  </div>
+</header>
+
+<section>
+  <div class="frame">
+    <div class="prose">
+      <p class="eyebrow">한 눈에</p>
+      <h2>다섯 단계, 그리고 하나의 반복</h2>
+      <p>
+        전체 작업은 다섯 덩이다. 이 가운데 <b>세 번째만 여러 번 돈다</b> — 퍼즐 하나마다
+        설계부터 실플레이까지 한 바퀴다. 나머지 넷은 방 하나에 한 번씩이다.
+      </p>
+    </div>
+
+    <div class="figure scroller">
+      <svg viewBox="0 0 1000 268" role="img" aria-label="설치, new-subject, add-puzzle 반복, audit-room, 검증과 배포로 이어지는 전체 흐름도">
+        <!-- 단계 상자 -->
+        <rect class="svg-box" x="10" y="52" width="170" height="116" rx="4" stroke-width="1"/>
+        <text class="svg-n svg-signal" x="28" y="80">01</text>
+        <text class="svg-t svg-ink" x="28" y="106">설치</text>
+        <text class="svg-s svg-dim" x="28" y="128">clone · install</text>
+        <text class="svg-s svg-dim" x="28" y="146">assets · dev</text>
+
+        <rect class="svg-box" x="208" y="52" width="170" height="116" rx="4" stroke-width="1"/>
+        <text class="svg-n svg-signal" x="226" y="80">02</text>
+        <text class="svg-t svg-ink" x="226" y="106">교과 갈아끼우기</text>
+        <text class="svg-s svg-accent" x="226" y="128">/new-subject</text>
+        <text class="svg-s svg-dim" x="226" y="146">최초 1회</text>
+
+        <rect class="svg-live" x="406" y="52" width="170" height="116" rx="4" stroke-width="1.5"/>
+        <text class="svg-n svg-signal" x="424" y="80">03</text>
+        <text class="svg-t svg-ink" x="424" y="106">퍼즐 만들기</text>
+        <text class="svg-s svg-accent" x="424" y="128">/add-puzzle</text>
+        <text class="svg-s svg-signal" x="424" y="146">퍼즐마다 반복</text>
+
+        <rect class="svg-box" x="604" y="52" width="170" height="116" rx="4" stroke-width="1"/>
+        <text class="svg-n svg-signal" x="622" y="80">04</text>
+        <text class="svg-t svg-ink" x="622" y="106">전수 점검</text>
+        <text class="svg-s svg-accent" x="622" y="128">/audit-room</text>
+        <text class="svg-s svg-dim" x="622" y="146">학습자 눈으로</text>
+
+        <rect class="svg-box" x="802" y="52" width="170" height="116" rx="4" stroke-width="1"/>
+        <text class="svg-n svg-signal" x="820" y="80">05</text>
+        <text class="svg-t svg-ink" x="820" y="106">검증 · 배포</text>
+        <text class="svg-s svg-accent" x="820" y="128">verify.sh full</text>
+        <text class="svg-s svg-dim" x="820" y="146">정적 호스팅</text>
+
+        <!-- 진행 화살표 -->
+        <path class="svg-flow" d="M180 110 L200 110" stroke-width="1.5"/>
+        <path d="M195 105 L203 110 L195 115 Z" fill="var(--signal)"/>
+        <path class="svg-flow" d="M378 110 L398 110" stroke-width="1.5"/>
+        <path d="M393 105 L401 110 L393 115 Z" fill="var(--signal)"/>
+        <path class="svg-flow" d="M576 110 L596 110" stroke-width="1.5"/>
+        <path d="M591 105 L599 110 L591 115 Z" fill="var(--signal)"/>
+        <path class="svg-flow" d="M774 110 L794 110" stroke-width="1.5"/>
+        <path d="M789 105 L797 110 L789 115 Z" fill="var(--signal)"/>
+
+        <!-- 되돌아가는 길 -->
+        <path class="svg-back" d="M689 168 L689 212 L491 212 L491 172" stroke-width="1.5"/>
+        <path d="M486 177 L491 169 L496 177 Z" fill="var(--accent-dim)"/>
+        <text class="svg-s svg-dim" x="590" y="234" text-anchor="middle">고칠 것이 나오면 되돌아간다</text>
+
+        <!-- 상단 라벨 -->
+        <text class="svg-s svg-dim" x="10" y="30">방 하나에 한 번</text>
+        <line class="svg-open" x1="128" y1="26" x2="398" y2="26" stroke-width="1"/>
+        <text class="svg-s svg-signal" x="406" y="30">퍼즐 4~5개, 한 개마다 한 바퀴</text>
+      </svg>
+      <p class="caption">
+        03만 반복한다. 02는 되돌리려면 git이 필요한 <b>파괴적 단계</b>라 한 번만 실행한다.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="frame">
+    <div class="prose">
+      <p class="eyebrow">01 · 설치</p>
+      <h2>먼저 clone하고, 그 폴더에서 Claude Code를 연다</h2>
+      <p>
+        순서가 중요하다. 스킬은 저장소 안 <code>.claude/</code>에 들어 있어서
+        <b>폴더를 연 뒤에야 로드된다.</b> 링크만 주고 "이걸로 만들어 줘"라고 하면
+        스킬이 없는 상태로 시작한다.
+      </p>
+    </div>
+
+    <div class="prose" style="margin-top: 26px;">
+<pre><code>git clone https://github.com/dossamlab/escape-kit.git my-escape
+cd my-escape &amp;&amp; npm install &amp;&amp; npm run assets &amp;&amp; npm run dev</code></pre>
+      <p>
+        <code>http://localhost:5373</code>이 열린다. <b>예제 방을 한 바퀴 돌아 보라.</b>
+        암전에서 시작해 진자를 흔들어 불을 켜고, 벽을 두드려 테이프를 찾고, 소리가 죽는
+        자리를 걸어서 찾고, 현을 짚어 배음을 내고, 마지막에 네 음을 연주해 문을 연다.
+        어떤 저작 도구든 결국 이 한 바퀴를 만드는 일이다 — 먼저 플레이해 보는 것이
+        가장 빠른 설명이다.
+      </p>
+      <p>
+        개발 서버가 뜨면 주소 밑에 <b>그리드 창</b> 주소가 하나 더 찍힌다. 방의 좌표를
+        손으로 세지 않게 해 주는 창이다 — 아래 03단계에서 다룬다.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="frame">
+    <div class="prose">
+      <p class="eyebrow">02 · 교과 갈아끼우기</p>
+      <h2><code>/new-subject</code> — 인터뷰 한 번으로 뼈대가 선다</h2>
+      <p>
+        Claude Code에 <code>/new-subject</code>라고 치면 인터뷰가 시작된다.
+        <b>최초 1회만</b> 실행한다. 물리 예제의 방·퍼즐·스토리를 지우므로,
+        되돌리려면 git이 필요하다는 확인을 먼저 받는다.
+      </p>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-n">묻는다</div>
+        <div>
+          <h3>교과 · 성취기준 · 화자 · 규모 · 답의 형태</h3>
+          <ul>
+            <li><b>성취기준은 원문</b>을 붙여넣거나 출처 URL을 준다. 기억으로 코드를 지어내지 않는 것이 이 키트의 규약이다 — 확인 전에는 매핑표에 <code>(코드 검증 예정)</code>으로 남는다.</li>
+            <li><b>화자</b>는 그 교과의 인물이다. 교사가 직접 설명하지 않고 <b>그 인물이 남긴 기록이 말하게 한다.</b> 세종이 남긴 주석, 퀴리의 실험 일지, 사마천의 사초 — 화자를 정하면 방에 놓일 사물과 연구노트가 따라온다.</li>
+            <li><b>규모</b>는 방 1개를 권한다. 퍼즐 4개 + 최종 콘솔 1개가 표준이다.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-n">채굴</div>
+        <div>
+          <h3>학생이 가장 많이 틀리는 것 10개 — 여기서 품질이 갈린다</h3>
+          <p>
+            "이 단원에서 학생들이 <b>가장 많이 틀리는</b> 사실·표기·연표·수치·개념 혼동을
+            10개만 적어 주세요." 이 10개가 다음 단계에서 만들어지는
+            <b>교과 검수 에이전트의 프롬프트에 상수로 박힌다.</b> 이후 모든 퍼즐이 그 검수를 통과해야 한다.
+          </p>
+          <p>
+            동봉된 <code>physics-reviewer.md</code>가 그 형식이다 — 발머 계열 파장
+            656/486/434/410&nbsp;nm처럼 <b>틀리면 바로 알 수 있는 값</b>을 프롬프트가 직접 들고 있다.
+          </p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-n">산출</div>
+        <div>
+          <h3>다섯 가지가 만들어진다</h3>
+          <ul>
+            <li><code>.claude/agents/&lt;교과&gt;-reviewer.md</code> — 오답 10개가 박힌 검수자</li>
+            <li><code>docs/curriculum-map.md</code> — 성취기준 ↔ 퍼즐 매핑표 (+ 출처, 범위 밖 예외 표)</li>
+            <li><code>docs/story.md</code> — 화자 모티브 스토리 뼈대</li>
+            <li><code>docs/puzzles/room1-overview.md</code> — 방 슬레이트와 코드 조각 배정표</li>
+            <li><code>src/config.ts</code> — 제목 · 저장 키 등 세계관 문자열</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="prose" style="margin-top: 34px;">
+      <h3>답이 꼭 숫자일 필요는 없다</h3>
+      <p>
+        최종 잠금은 세 단계 중에서 고른다. 화면에 보이는 것은 내부 표현이 아니라
+        <b>키에 붙인 라벨</b>이다 — 동봉 예제가 그 실증이다. 코드는 <code>"1365"</code>인데
+        학생이 보는 것은 건반의 <b>도·미·라·솔</b>이다.
+      </p>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>단계</th><th>만드는 법</th><th>쓸 수 있는 답</th><th>비용</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>① 숫자 키패드</td>
+            <td>manifest에 <code>gate.code</code>만 적는다</td>
+            <td>숫자</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>② 라벨 키패드</td>
+            <td><code>gate.keys</code>로 키에 아무 글자나</td>
+            <td>자모 · 한자 · 연도 · 시대명 · 화학기호 · 사건 이름</td>
+            <td>몇 줄</td>
+          </tr>
+          <tr>
+            <td>③ 콘솔 퍼즐</td>
+            <td>최종 장치에 <code>gate</code> 없이 <code>puzzleId</code>만 주고, 그 퍼즐의 <code>reward.event</code>를 문이 기다리게 한다</td>
+            <td><b>형태 제한 없음</b> — 연표 배치 · 자모 조합 · 주기율표 · 지도</td>
+            <td>퍼즐 하나</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="caption">
+      ③의 실증은 한국사 드라이런의 '연대 정리대'다. 키패드 대신 시대 패 여덟 중 넷을
+      골라 연대순으로 놓는 퍼즐이 곧 자물쇠였다.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="frame">
+    <div class="prose">
+      <p class="eyebrow">03 · 반복하는 한 바퀴</p>
+      <h2><code>/add-puzzle</code> — 설계에서 실플레이까지</h2>
+      <p>
+        퍼즐 하나가 이 순서를 통째로 돈다. 되돌아가는 화살표가 셋 있다는 점이 중요하다 —
+        <b>승인·검수·실플레이는 통과할 때까지 앞으로 못 간다.</b>
+      </p>
+    </div>
+
+    <div class="figure scroller">
+      <svg viewBox="0 0 640 800" role="img" aria-label="add-puzzle 순서도: 설계, 승인 판단, 에셋, 구현, 교과 검수, 수정 판단, 실플레이, 결함 판단, 스토리 반영, 커밋">
+        <!-- 1 설계 -->
+        <rect class="svg-box" x="160" y="18" width="330" height="50" rx="4" stroke-width="1"/>
+        <text class="svg-t svg-ink" x="180" y="42">설계</text>
+        <text class="svg-s svg-dim" x="180" y="60">puzzle-designer가 설계서를 쓴다</text>
+
+        <!-- 승인? -->
+        <path class="svg-open" d="M325 92 L470 122 L325 152 L180 122 Z" stroke-width="1.5"/>
+        <text class="svg-t svg-ink" x="325" y="119" text-anchor="middle">사용자 승인</text>
+        <text class="svg-s svg-dim" x="325" y="138" text-anchor="middle">설계서를 보고 고른다</text>
+
+        <!-- 2 에셋 -->
+        <rect class="svg-box" x="160" y="176" width="330" height="50" rx="4" stroke-width="1"/>
+        <text class="svg-t svg-ink" x="180" y="200">에셋</text>
+        <text class="svg-s svg-dim" x="180" y="218">asset-artist · 토큰 색만 쓴다</text>
+
+        <!-- 3 구현 -->
+        <rect class="svg-live" x="160" y="250" width="330" height="50" rx="4" stroke-width="1.5"/>
+        <text class="svg-t svg-ink" x="180" y="274">구현</text>
+        <text class="svg-s svg-dim" x="180" y="292">manifest · puzzle · spec · autoplay</text>
+
+        <!-- 4 교과 검수 -->
+        <rect class="svg-box" x="160" y="324" width="330" height="50" rx="4" stroke-width="1"/>
+        <text class="svg-t svg-ink" x="180" y="348">교과 검수</text>
+        <text class="svg-s svg-dim" x="180" y="366">&lt;교과&gt;-reviewer · 읽기 전용</text>
+
+        <!-- 수정? -->
+        <path class="svg-open" d="M325 398 L470 428 L325 458 L180 428 Z" stroke-width="1.5"/>
+        <text class="svg-t svg-ink" x="325" y="425" text-anchor="middle">개념이 맞나</text>
+        <text class="svg-s svg-dim" x="325" y="444" text-anchor="middle">오개념 유발 위험 포함</text>
+
+        <!-- 5 실플레이 -->
+        <rect class="svg-box" x="160" y="482" width="330" height="50" rx="4" stroke-width="1"/>
+        <text class="svg-t svg-ink" x="180" y="506">실플레이</text>
+        <text class="svg-s svg-dim" x="180" y="524">verify.sh full → playtester</text>
+
+        <!-- 0건? -->
+        <path class="svg-open" d="M325 556 L470 586 L325 616 L180 586 Z" stroke-width="1.5"/>
+        <text class="svg-t svg-ink" x="325" y="583" text-anchor="middle">BLOCKER · BUG 0건</text>
+        <text class="svg-s svg-dim" x="325" y="602" text-anchor="middle">POLISH는 목록으로 보고</text>
+
+        <!-- 6 스토리 -->
+        <rect class="svg-box" x="160" y="640" width="330" height="50" rx="4" stroke-width="1"/>
+        <text class="svg-t svg-ink" x="180" y="664">스토리 반영</text>
+        <text class="svg-s svg-dim" x="180" y="682">story.md에 앵커 추가 → npm run story</text>
+
+        <!-- 7 마무리 -->
+        <rect class="svg-box" x="160" y="714" width="330" height="50" rx="4" stroke-width="1"/>
+        <text class="svg-t svg-ink" x="180" y="738">커밋 · 직접 확인</text>
+        <text class="svg-s svg-dim" x="180" y="756">PC와 폰 양쪽에서 한 번씩</text>
+
+        <!-- 진행선 -->
+        <path class="svg-flow" d="M325 68 L325 88" stroke-width="1.5"/>
+        <path d="M320 83 L325 91 L330 83 Z" fill="var(--signal)"/>
+        <path class="svg-flow" d="M325 152 L325 172" stroke-width="1.5"/>
+        <path d="M320 167 L325 175 L330 167 Z" fill="var(--signal)"/>
+        <path class="svg-flow" d="M325 226 L325 246" stroke-width="1.5"/>
+        <path d="M320 241 L325 249 L330 241 Z" fill="var(--signal)"/>
+        <path class="svg-flow" d="M325 300 L325 320" stroke-width="1.5"/>
+        <path d="M320 315 L325 323 L330 315 Z" fill="var(--signal)"/>
+        <path class="svg-flow" d="M325 374 L325 394" stroke-width="1.5"/>
+        <path d="M320 389 L325 397 L330 389 Z" fill="var(--signal)"/>
+        <path class="svg-flow" d="M325 458 L325 478" stroke-width="1.5"/>
+        <path d="M320 473 L325 481 L330 473 Z" fill="var(--signal)"/>
+        <path class="svg-flow" d="M325 532 L325 552" stroke-width="1.5"/>
+        <path d="M320 547 L325 555 L330 547 Z" fill="var(--signal)"/>
+        <path class="svg-flow" d="M325 616 L325 636" stroke-width="1.5"/>
+        <path d="M320 631 L325 639 L330 631 Z" fill="var(--signal)"/>
+        <path class="svg-flow" d="M325 690 L325 710" stroke-width="1.5"/>
+        <path d="M320 705 L325 713 L330 705 Z" fill="var(--signal)"/>
+
+        <text class="svg-s svg-signal" x="336" y="166">예</text>
+        <text class="svg-s svg-signal" x="336" y="472">예</text>
+        <text class="svg-s svg-signal" x="336" y="630">예</text>
+
+        <!-- 되돌아가는 길 -->
+        <path class="svg-back" d="M180 122 L120 122 L120 43 L156 43" stroke-width="1.5"/>
+        <path d="M151 38 L159 43 L151 48 Z" fill="var(--accent-dim)"/>
+        <text class="svg-s svg-dim" x="174" y="112" text-anchor="end">아니오</text>
+
+        <path class="svg-back" d="M180 428 L84 428 L84 268 L156 268" stroke-width="1.5"/>
+        <path d="M151 263 L159 268 L151 273 Z" fill="var(--accent-dim)"/>
+        <text class="svg-s svg-dim" x="174" y="418" text-anchor="end">아니오</text>
+
+        <path class="svg-back" d="M180 586 L36 586 L36 284 L156 284" stroke-width="1.5"/>
+        <path d="M151 279 L159 284 L151 289 Z" fill="var(--accent-dim)"/>
+        <text class="svg-s svg-dim" x="174" y="576" text-anchor="end">아니오</text>
+
+        <text class="svg-s svg-dim" x="500" y="272">3~5회 반복이 보통이다</text>
+      </svg>
+      <p class="caption">
+        점선 셋이 전부 <b>구현</b>으로 돌아온다. 설계로는 승인 전에만 돌아간다.
+      </p>
+    </div>
+
+    <div class="prose" style="margin-top: 34px;">
+      <h3>퍼즐 하나는 폴더 하나다</h3>
+      <p>
+        <code>manifest.json</code> + <code>puzzle.ts</code> + <code>puzzle.css</code> +
+        <code>autoplay.ts</code> 네 파일이 한 세트이고, <code>src/registry.ts</code>에
+        등록해야 로드된다. 엔진은 퍼즐 내부를 모르고 퍼즐은 엔진 내부를 모른다 —
+        둘 사이에는 <code>PuzzleApi</code> 하나만 있다.
+      </p>
+      <p>
+        <b>정답 상수는 <code>autoplay.ts</code>에만 둔다.</b> 테스트가 거기서 가져다 쓰므로
+        spec에 답을 다시 적지 않는다. 답을 고칠 때 두 곳을 고쳐야 하면 언젠가 한 곳을 잊는다.
+      </p>
+      <h3>대사와 연구노트는 코드에 넣지 않는다</h3>
+      <p>
+        전부 <code>docs/story.md</code>에 있다. <code>### #앵커</code> 다음의
+        <code>&gt;</code> 인용 줄이 대사 한 건이고, 코드는 그 앵커 문자열로만 텍스트를
+        참조한다. 새 대사가 필요하면 story.md에 앵커를 추가하고 <code>npm run story</code>.
+        앵커 오타는 런타임에 조용하므로 검산 스크립트가 대신 잡는다.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="frame">
+    <div class="prose">
+      <p class="eyebrow">03과 함께 · 방 배치</p>
+      <h2>좌표는 그리드 창에서 찍는다 — 눈대중하면 틀린다</h2>
+      <p>
+        화면에서 픽셀을 눈으로 읽으면 어긋난다. 실측으로 <b>45px(약 0.85타일)</b>까지
+        틀렸다. 그래서 배경 그림 위에 격자를 얹어 놓고 <b>못 걷는 칸을 마우스로 칠하고
+        장치 자리를 클릭해서 찍는 창</b>이 들어 있다.
+      </p>
+    </div>
+
+    <div class="prose" style="margin-top: 26px;">
+<pre><code>npm run dev         <span class="c"># 개발 서버 주소 밑에 그리드 창 주소가 같이 찍힌다</span>
+npm run tiles       <span class="c"># 주소 + 열기 전 조건(배경 PNG · 개발 서버)을 미리 검사</span>
+npm run tiles:open  <span class="c"># 조건이 맞으면 브라우저까지 띄운다</span></code></pre>
+      <p>
+        열면 <b>지금 맵의 걷기 금지 칸이 이미 칠해진 채로</b> 뜬다. 백지에서 시작하지 않는다.
+        「맵 상태로 되돌리기」로 언제든 원상복구, 「전부 지우기」는 빈 판이다.
+        빨강이 못 걷는 칸, 초록이 시작 위치, 노랑이 장치, 파랑이 연구노트다.
+      </p>
+    </div>
+
+    <div class="figure scroller">
+      <svg viewBox="0 0 1000 176" role="img" aria-label="그리드 창에서 칠한 결과가 blocks-from-mark, maps 파일, reach 검산으로 이어지는 흐름">
+        <rect class="svg-live" x="10" y="34" width="212" height="86" rx="4" stroke-width="1.5"/>
+        <text class="svg-t svg-ink" x="28" y="62">그림 위에 칠한다</text>
+        <text class="svg-s svg-dim" x="28" y="84">tools/tiles.html</text>
+        <text class="svg-s svg-signal" x="28" y="104">「결과 복사」 → mark.txt</text>
+
+        <rect class="svg-box" x="270" y="34" width="212" height="86" rx="4" stroke-width="1"/>
+        <text class="svg-t svg-ink" x="288" y="62">사각형으로 묶는다</text>
+        <text class="svg-s svg-dim" x="288" y="84">blocks-from-mark.mjs</text>
+        <text class="svg-s svg-dim" x="288" y="104">최소 개수의 blocks</text>
+
+        <rect class="svg-box" x="530" y="34" width="212" height="86" rx="4" stroke-width="1"/>
+        <text class="svg-t svg-ink" x="548" y="62">맵에 붙인다</text>
+        <text class="svg-s svg-dim" x="548" y="84">src/maps/&lt;방&gt;.ts</text>
+        <text class="svg-s svg-dim" x="548" y="104">blocks 필드</text>
+
+        <rect class="svg-box" x="790" y="34" width="200" height="86" rx="4" stroke-width="1"/>
+        <text class="svg-t svg-ink" x="808" y="62">닿는지 검산한다</text>
+        <text class="svg-s svg-accent" x="808" y="84">npm run reach</text>
+        <text class="svg-s svg-dim" x="808" y="104">건드렸으면 필수</text>
+
+        <path class="svg-flow" d="M222 77 L262 77" stroke-width="1.5"/>
+        <path d="M257 72 L265 77 L257 82 Z" fill="var(--signal)"/>
+        <path class="svg-flow" d="M482 77 L522 77" stroke-width="1.5"/>
+        <path d="M517 72 L525 77 L517 82 Z" fill="var(--signal)"/>
+        <path class="svg-flow" d="M742 77 L782 77" stroke-width="1.5"/>
+        <path d="M777 72 L785 77 L777 82 Z" fill="var(--signal)"/>
+
+        <text class="svg-s svg-dim" x="890" y="150" text-anchor="middle">구역이 통째로 막혀도</text>
+        <text class="svg-s svg-dim" x="890" y="166" text-anchor="middle">타입 검사·e2e에는 안 잡힌다</text>
+      </svg>
+    </div>
+
+    <div class="prose" style="margin-top: 26px;">
+      <p>
+        마지막 칸이 가장 중요하다. <code>blocks</code>를 늘리다 보면 어느 순간 구역 하나가
+        통째로 막히는데, <b>그 구역을 걷는 테스트가 없으면 타입 검사에도 e2e에도 안 잡힌다.</b>
+        방을 못 깨는 빌드가 조용히 나갈 수 있다. <code>npm run reach</code>가 스폰에서
+        모든 오브젝트까지 실제로 걸어 본다.
+      </p>
+      <p>
+        Claude Code에게 시킬 때도 이 도구를 거치게 하라. "저 책상을 못 지나가게 해 줘"라고만
+        하면 화면을 눈대중해 좌표를 지어낼 수 있다. <code>/relayout-room</code> 스킬이
+        위 절차를 그대로 밟는다.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="frame">
+    <div class="prose">
+      <p class="eyebrow">04–05 · 점검과 배포</p>
+      <h2>조용히 실패하는 것만 골라 검산한다</h2>
+      <p>
+        작업이 끝날 때마다 <code>quick</code>, 퍼즐이 완성되면 <code>full</code>.
+        검산 대상은 <b>틀려도 아무 소리가 안 나는 것들</b>이다 — 앵커 오타, 근접 판정
+        간격, 도달 가능성.
+      </p>
+    </div>
+
+    <div class="prose" style="margin-top: 26px;">
+<pre><code>bash scripts/verify.sh quick   <span class="c"># 매 작업 후 — 수 초</span>
+
+npx playwright install chromium <span class="c"># 처음 한 번만 (수백 MB)</span>
+bash scripts/verify.sh full     <span class="c"># 퍼즐 완성 시 — 데스크톱 + 모바일</span></code></pre>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>명령</th><th>하는 일</th><th>언제</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>npm run dev</code></td><td>개발 서버 (5373)</td><td>늘</td></tr>
+          <tr><td><code>npm run tiles</code></td><td>그리드 창 주소 + 열기 전 조건 검사</td><td>좌표를 찍을 때</td></tr>
+          <tr><td><code>npm run story</code></td><td>story.md → story-data.ts 재생성</td><td>대사·노트를 고쳤을 때<br><small>e2e 도중에는 금지 — 풀 리로드로 테스트가 죽는다</small></td></tr>
+          <tr><td><code>npm run assets</code></td><td>SVG → PNG (토큰 색 치환 포함)</td><td>에셋을 고쳤을 때</td></tr>
+          <tr><td><code>npm run reach</code></td><td>스폰에서 모든 오브젝트에 걸어서 닿는지</td><td><b>blocks를 건드렸으면 필수</b></td></tr>
+          <tr><td><code>npm run anchors</code></td><td>story.md 앵커 참조 검산</td><td>앵커를 고쳤을 때</td></tr>
+          <tr><td><code>npm run build</code></td><td>정적 빌드 (<code>dist/</code>, 상대 경로)</td><td>배포 직전</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="prose" style="margin-top: 30px;">
+      <h3>배포는 정적 파일 복사다</h3>
+      <p>
+        <code>npm run build</code>가 만드는 <code>dist/</code>를 그대로 올리면 된다.
+        <code>base</code>가 상대 경로라 <b>어떤 호스팅의 어떤 하위 경로에서도 돈다</b> —
+        학교 홈페이지 하위 폴더든, 무료 정적 호스팅이든, USB에 담아 열든 같다.
+        서버도 데이터베이스도 필요 없다. 진행 상황은 학생 브라우저에만 저장된다.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="frame">
+    <div class="prose">
+      <p class="eyebrow">먼저 알아 둘 것</p>
+      <h2>전부 실제로 당한 것들이다</h2>
+    </div>
+
+    <div class="traps">
+      <div class="trap">
+        <h3>e2e 통과 ≠ 화면 정상</h3>
+        <p>
+          SVG 표현 속성 <b>opacity는 CSS에 진다.</b> <b>display:block은 hidden 속성을 덮는다.</b>
+          테스트의 텍스트 매칭은 <b>숨은 요소의 글자도 잡는다.</b>
+          시각 요소를 만졌으면 스크린샷을 떠서 눈으로 볼 것.
+        </p>
+      </div>
+      <div class="trap">
+        <h3>봉인 안쪽 퍼즐로 봉인을 열 수 없다</h3>
+        <p>
+          <b>봉인 구역을 여는 조건에 그 구역 안의 퍼즐을 걸면 영영 안 열린다.</b>
+          런타임 검사가 없다. 봉인 범위는 벽 띠까지 덮어야 너머로 반짝임이 새지 않는다.
+        </p>
+      </div>
+      <div class="trap">
+        <h3>엔딩 대사를 안 주면 기본값이 나온다</h3>
+        <p>
+          방에 <b>엔딩 앵커를 지정하지 않으면</b> 엔진 기본 대사로 끝난다.
+          교과를 갈아끼운 방에서 물리 예제의 말투가 나오는 원인이 대개 이것이다.
+        </p>
+      </div>
+      <div class="trap">
+        <h3>배경 좌표 보정은 노동이다</h3>
+        <p>
+          생성 이미지 한 장마다 바닥 마름모를 재서 배율과 오프셋을 손으로 넣어야 한다.
+          <b>스킬이 절차를 문서화해 두었지만 왕복이 생기는 단계다.</b>
+        </p>
+      </div>
+      <div class="trap">
+        <h3>검산은 결정적 구조가 있어야 성립한다</h3>
+        <p>
+          순서·대조·짝맞추기처럼 <b>판정이 결정적인 답</b>이면 유일해와 수렴을 테스트가 증명한다.
+          자유 서술이면 대체 수단은 실플레이뿐이다 —
+          <b>힌트를 열지 않고 한 번 풀어 보는 절차를 건너뛰지 말 것.</b>
+        </p>
+      </div>
+      <div class="trap">
+        <h3>성취기준 코드는 추측해 적지 않는다</h3>
+        <p>
+          <b>웹으로 확인한 뒤에만</b> 매핑표에 적는다. 확인 전에는 검증 예정으로 남긴다.
+          잘못 적힌 코드는 수업에 쓰이는 순간 교사의 신뢰를 깎는다.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="frame prose">
+    <p>
+      파일 구성과 그렇게 자른 이유는 <a href="harness-design.html">기초 설계 문서</a>에 있다 —
+      의존 방향, 단일 소스와 파생물, 정답을 한 곳에 두는 규약, 그리고 <b>치른 대가</b>.
+      규약 전체는 저장소의 <code>CLAUDE.md</code>가 들고 있다.
+    </p>
+  </div>
+</footer>
