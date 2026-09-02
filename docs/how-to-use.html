@@ -282,6 +282,19 @@
   .plain h2 { font-size: clamp(26px, 3.6vw, 36px); }
   .plain .lede-2 { font-size: clamp(17px, 2vw, 19px); color: var(--ink-dim); max-width: 62ch; }
   .plain .lede-2 b { color: var(--ink); font-weight: 600; }
+  .basis {
+    margin: 22px 0 0;
+    padding: 16px 18px;
+    background: var(--surface);
+    border: 1px solid var(--rule-soft);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    font-size: 15px;
+    color: var(--ink-dim);
+    max-width: 70ch;
+  }
+  .basis b { color: var(--ink); }
+
   .reassure { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 14px; margin-top: 32px; }
   .reassure div {
     background: var(--surface);
@@ -532,6 +545,12 @@
       <p class="lede-2">
         선생님이 하는 일은 <b>교과를 판단하는 것</b>입니다. 코드는 Claude Code가 씁니다.
         아래 다섯 칸이 컴퓨터 앞에서 실제로 하는 전부입니다.
+      </p>
+      <p class="basis">
+        <b>이 키트는 Claude Code 기준으로 만들었습니다.</b> 게임 자체는 어떤 도구로도 고칠 수 있지만,
+        저작 절차 여섯 개와 안전장치(에셋 색을 정해진 팔레트 밖으로 못 쓰게 막는 것, 세션마다 진행
+        상황을 되짚어 주는 것)가 Claude Code 위에 얹혀 있습니다. 다른 AI 코딩 도구로 못 쓸 것은
+        없지만, <b>끝까지 검증된 길은 이쪽 하나</b>입니다.
       </p>
     </div>
 
@@ -1573,6 +1592,11 @@ bash scripts/verify.sh full     <span class="c"># 퍼즐 완성 시 — 데스�
       파일 구성과 그렇게 자른 이유는 <a href="harness-design.html">기초 설계 문서</a>에 있다 —
       의존 방향, 단일 소스와 파생물, 정답을 한 곳에 두는 규약, 그리고 <b>치른 대가</b>.
       규약 전체는 저장소의 <code>CLAUDE.md</code>가 들고 있다.
+    </p>
+    <p style="margin: 0;">
+      이 문서를 파일로 두고 싶으면
+      <a href="https://github.com/dossamlab/escape-kit/blob/main/docs/how-to-use.html">저장소의 원본</a>에서
+      내려받으면 됩니다. 파일 하나로 끝나 인터넷 없이도 열립니다.
     </p>
     <p class="credit">
       <b>도름스 도쌤</b>이 만든 교과 방탈출 저작 키트입니다.
