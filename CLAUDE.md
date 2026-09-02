@@ -16,6 +16,7 @@
 | `npm run story` | docs/story.md → src/data/story-data.ts 재생성 |
 | `npm run assets` | assets-src/ SVG → public/assets/ PNG (토큰 치환 포함) |
 | `npm run tiles` | 그리드 창(tools/tiles.html) 주소 + 열기 전 조건 검사 — 좌표는 여기서 찍는다 |
+| `npm run tiles:open` | 위 + 브라우저까지 띄운다 (`tiles -- --open`) |
 | `npm run test:e2e` | Playwright 전체 (desktop-chrome + mobile) |
 | `npm run reach` | 스폰에서 모든 오브젝트에 걸어서 닿는지 검산 (`blocks`를 건드렸으면 필수) |
 | `npm run layout` | 오브젝트 간격·근접 판정 검산 |

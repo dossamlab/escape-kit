@@ -129,9 +129,14 @@ cd my-escape && npm install && npm run assets && npm run dev
 얹어 놓고, 못 걷는 칸을 마우스로 칠하고 장치 자리를 클릭해서 찍는 창이 들어 있다.
 
 ```bash
-npm run dev      # 개발 서버 주소 밑에 그리드 창 주소가 같이 찍힌다
-npm run tiles    # 주소 + 열기 전 조건(배경 PNG·서버)을 미리 검사
+npm run dev         # 개발 서버 주소 밑에 그리드 창 주소가 같이 찍힌다
+npm run tiles       # 주소 + 열기 전 조건(배경 PNG·개발 서버)을 미리 검사
+npm run tiles:open  # 조건이 맞으면 브라우저까지 띄운다
 ```
+
+`tiles:open`은 서버가 꺼져 있으면 열지 않고 이유를 알려 준다 — 꺼진 채로 열면
+"연결할 수 없음" 페이지가 떠서 도구가 고장난 것으로 읽히기 때문이다. 원격 셸이나
+컨테이너처럼 브라우저를 띄울 수 없는 환경에서는 주소만 찍고 넘어간다.
 
 `http://localhost:5373/tools/tiles.html` — 창을 열면 이렇게 생겼다.
 
