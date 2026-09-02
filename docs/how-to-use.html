@@ -293,6 +293,34 @@
   .reassure p { font-size: 14.5px; color: var(--ink-dim); margin: 0; }
   .reassure p b { color: var(--ink); }
 
+  /* ── 환경 탭 ──────────────────────────────────────── */
+  .tabs { display: flex; gap: 4px; margin: 32px 0 0; border-bottom: 1px solid var(--rule); }
+  .tab {
+    appearance: none;
+    background: none;
+    border: 1px solid transparent;
+    border-bottom: 0;
+    border-radius: 4px 4px 0 0;
+    padding: 11px 20px;
+    margin-bottom: -1px;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink-dim);
+    cursor: pointer;
+  }
+  .tab:hover { color: var(--ink); }
+  .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .tab[aria-selected="true"] {
+    color: var(--ink);
+    background: var(--surface);
+    border-color: var(--rule);
+    border-bottom: 1px solid var(--surface);
+    box-shadow: inset 0 2px 0 var(--signal);
+  }
+  .tabnote { font-size: 14px; color: var(--ink-dim); margin: 18px 0 0; max-width: 66ch; }
+  .tabnote b { color: var(--ink); }
+
   /* ── 그대로 따라 치기 ─────────────────────────────── */
   /* 본문 li의 max-width(66ch)가 여기까지 내려와 항목이 좁아졌다 — 끊는다 */
   .script > li { max-width: none; }
@@ -613,9 +641,20 @@
         <b>회색 상자를 누르면 복사됩니다</b> — 창에 붙여넣고 엔터를 치세요.
         점선 상자는 명령이 아니라 <b>Claude Code에게 말로 하는 것</b>이라, 표현이 조금 달라도 됩니다.
       </p>
+      <p>
+        Claude Code는 <b>터미널</b>로도 쓰고 <b>데스크탑 앱</b>으로도 씁니다. 두 길은 순서가 다르니
+        아래에서 자기 쪽을 고르세요. <b>검은 창을 한 번도 안 써 보셨다면 데스크탑 앱</b>입니다.
+      </p>
     </div>
 
-    <ol class="script">
+    <div class="tabs" role="tablist" aria-label="사용 환경 고르기">
+      <button class="tab" type="button" role="tab" id="tab-term" aria-controls="panel-term" aria-selected="true">터미널 사용자</button>
+      <button class="tab" type="button" role="tab" id="tab-app" aria-controls="panel-app" aria-selected="false" tabindex="-1">데스크탑 앱 사용자</button>
+    </div>
+
+    <div id="panel-term" role="tabpanel" aria-labelledby="tab-term">
+      <p class="tabnote">검은 창(터미널·명령 프롬프트)에 직접 칩니다. <b>회색 상자가 그대로 칠 명령</b>입니다.</p>
+      <ol class="script">
       <li class="turn">
         <h3>준비 — 평생 한 번</h3>
         <p>두 프로그램을 받아 깝니다. 내려받아 실행한 뒤 확인만 누르면 됩니다.
@@ -789,6 +828,173 @@
         </div>
       </li>
     </ol>
+    </div>
+
+    <div id="panel-app" role="tabpanel" aria-labelledby="tab-app" hidden>
+      <p class="tabnote">검은 창을 쓰지 않습니다. <b>대부분을 말로 시키고 승인만</b> 하면 됩니다 —
+      점선 상자가 그 말이고, 회색 상자만 그대로 치는 명령입니다.</p>
+      <ol class="script">
+      <li class="turn">
+        <h3>준비 — 평생 한 번</h3>
+        <p><a href="https://nodejs.org">Node.js</a>(LTS)와
+        <a href="https://claude.com/download">Claude 데스크탑 앱</a>을 받아 깝니다.
+        <b>윈도우라면 <a href="https://git-scm.com/downloads/win">Git for Windows</a>도 먼저 깔고 앱을 껐다 켜야</b>
+        Code 탭이 동작합니다. 맥은 대개 이미 들어 있습니다.</p>
+      </li>
+
+      <li>
+        <div class="no"></div>
+        <div class="where cc">앱 화면</div>
+        <div>
+          <button class="cmd say" type="button"><span class="txt">앱을 켜고 위쪽 Code 탭을 누릅니다. 바탕화면에 빈 폴더를 하나 만들어 두세요 — 이름은 my-escape.</span><span class="tag">복사</span></button>
+          <p class="what">앱에는 Chat · Cowork · <b>Code</b> 세 탭이 있습니다. 우리가 쓰는 것은 <b>Code</b>입니다.</p>
+        </div>
+      </li>
+
+      <li>
+        <div class="no"></div>
+        <div class="where cc">앱 화면</div>
+        <div>
+          <button class="cmd say" type="button"><span class="txt">새 세션에서 환경은 Local, 프로젝트 폴더는 방금 만든 my-escape 폴더를 고릅니다.</span><span class="tag">복사</span></button>
+          <p class="what">보내기 버튼 옆에서 <b>환경 · 폴더 · 모델 · 권한 모드</b> 넷을 고릅니다.
+          권한 모드는 <b>기본값 그대로 두세요</b> — 명령을 돌리기 전에 물어보는 편이 안전합니다.</p>
+        </div>
+      </li>
+
+      <li>
+        <div class="no"></div>
+        <div class="where cc">Claude Code</div>
+        <div>
+          <button class="cmd say" type="button"><span class="txt">https://github.com/dossamlab/escape-kit 저장소를 이 폴더에 받아 주세요.</span><span class="tag">복사</span></button>
+          <p class="what">첫 메시지로 이렇게 보냅니다. <b>승인 카드가 뜨면 「허용」</b>을 누르세요.
+          이제부터 검은 창에 직접 칠 일이 없습니다 — <b>말로 시키고 승인만</b> 하면 됩니다.</p>
+        </div>
+      </li>
+
+      <li>
+        <div class="no"></div>
+        <div class="where cc">앱 화면</div>
+        <div>
+          <button class="cmd say" type="button"><span class="txt">세션을 새로 시작하고, 프로젝트 폴더로 방금 받은 폴더를 다시 고릅니다.</span><span class="tag">복사</span></button>
+          <p class="what"><b>이 단계를 건너뛰면 아래 <code>/new-subject</code>가 목록에 안 뜹니다.</b>
+          저작 스킬은 폴더 안 <code>.claude/</code>에 들어 있고, <b>세션이 열릴 때 읽히기</b> 때문입니다.</p>
+        </div>
+      </li>
+
+      <li>
+        <div class="no"></div>
+        <div class="where cc">Claude Code</div>
+        <div>
+          <button class="cmd say" type="button"><span class="txt">npm install 하고 npm run assets 까지 실행해 주세요.</span><span class="tag">복사</span></button>
+          <p class="what">부품을 받고 그림을 만듭니다. 승인 카드가 뜨면 허용하세요.
+          직접 치고 싶으면 <b>Ctrl + `</b>로 앱 안의 터미널을 열어도 됩니다(맥·윈도우 같습니다).</p>
+        </div>
+      </li>
+
+      <li>
+        <div class="no"></div>
+        <div class="where cc">Claude Code</div>
+        <div>
+          <button class="cmd say" type="button"><span class="txt">예제 방을 띄워서 보여 주세요.</span><span class="tag">복사</span></button>
+          <p class="what">Claude가 서버를 켜고 <b>앱 안의 브라우저 창</b>에 게임을 띄웁니다.
+          주소를 옮겨 적을 일이 없습니다. 한 바퀴 돌아 보세요.</p>
+        </div>
+      </li>
+
+      <li class="turn">
+        <h3>여기부터 선생님의 교과</h3>
+        <p>프롬프트 상자에 <b><code>/</code>를 치면</b> 쓸 수 있는 명령 목록이 뜹니다.
+        <b>+</b> 버튼 → <b>Slash commands</b>로도 같은 목록을 봅니다.</p>
+      </li>
+
+      <li>
+        <div class="no"></div>
+        <div class="where cc">Claude Code</div>
+        <div>
+          <button class="cmd" type="button"><span class="txt">/new-subject</span><span class="tag">복사</span></button>
+          <p class="what">교과를 갈아끼웁니다. <b>딱 한 번만</b>입니다. 목록에서 골라 누르면 입력창에 들어갑니다.</p>
+        </div>
+      </li>
+
+      <li>
+        <div class="no"></div>
+        <div class="where cc">Claude Code</div>
+        <div>
+          <button class="cmd say" type="button"><span class="txt">중학교 과학 3학년입니다. 성취기준 원문은 붙여넣을게요. 화자는 멘델로 하고, 방은 하나만 만들겠습니다.</span><span class="tag">복사</span></button>
+          <p class="what">질문에 이렇게 답합니다. 성취기준 문서가 파일로 있다면
+          <b>프롬프트 상자에 끌어다 놓아도</b> 됩니다.</p>
+        </div>
+      </li>
+
+      <li>
+        <div class="no"></div>
+        <div class="where cc">Claude Code</div>
+        <div>
+          <button class="cmd say" type="button"><span class="txt">학생들이 이 단원에서 가장 많이 틀리는 것 10개를 불러 드릴게요.</span><span class="tag">복사</span></button>
+          <p class="what"><b>여기서 품질이 갈립니다.</b> 이 10개가 검수자에게 상수로 박혀, 앞으로 만드는 모든 퍼즐이 그 검수를 통과해야 합니다.</p>
+        </div>
+      </li>
+
+      <li>
+        <div class="no"></div>
+        <div class="where cc">Claude Code</div>
+        <div>
+          <button class="cmd" type="button"><span class="txt">/add-puzzle</span><span class="tag">복사</span></button>
+          <p class="what">퍼즐을 하나 만듭니다. 방 하나에 <b>4~5번 반복</b>합니다.
+          바뀐 파일은 <b>차이 보기 창</b>에 나오니 무엇이 달라졌는지 눈으로 볼 수 있습니다.</p>
+        </div>
+      </li>
+
+      <li>
+        <div class="no"></div>
+        <div class="where cc">Claude Code</div>
+        <div>
+          <button class="cmd" type="button"><span class="txt">/audit-room</span><span class="tag">복사</span></button>
+          <p class="what">퍼즐을 다 만든 뒤 한 번 칩니다. <b>학습자 눈으로</b> 방 전체를 훑습니다.</p>
+        </div>
+      </li>
+
+      <li class="turn">
+        <h3>학생에게 주기</h3>
+        <p>검사와 빌드도 말로 시킵니다. 첫 번째는 검사용 브라우저를 내려받느라 몇 분 걸립니다.</p>
+      </li>
+
+      <li>
+        <div class="no"></div>
+        <div class="where cc">Claude Code</div>
+        <div>
+          <button class="cmd say" type="button"><span class="txt">검사용 브라우저를 설치하고, 전체 검증을 끝까지 돌려 주세요.</span><span class="tag">복사</span></button>
+          <p class="what">컴퓨터와 휴대폰 화면 양쪽에서 방을 자동으로 깨 봅니다.
+          <b>실패가 나오면 그대로 두고 "고쳐 주세요"라고만</b> 하면 됩니다 — 빨간 글씨를 옮겨 적을 필요가 없습니다.</p>
+        </div>
+      </li>
+
+      <li>
+        <div class="no"></div>
+        <div class="where cc">Claude Code</div>
+        <div>
+          <button class="cmd say" type="button"><span class="txt">배포용으로 빌드하고, 만들어진 dist 폴더를 탐색기에서 열어 주세요.</span><span class="tag">복사</span></button>
+          <p class="what"><b>dist</b> 폴더가 열립니다. 통째로 학교 홈페이지나 무료 호스팅에 올리면
+          <b>주소 하나</b>가 됩니다. 학생은 설치 없이 그 주소만 열면 됩니다.</p>
+        </div>
+      </li>
+
+      <li class="turn">
+        <h3>막혔을 때</h3>
+        <p>앱에서는 오류를 복사할 필요가 없습니다. Claude가 같은 화면을 보고 있습니다.</p>
+      </li>
+
+      <li>
+        <div class="no"></div>
+        <div class="where cc">Claude Code</div>
+        <div>
+          <button class="cmd say" type="button"><span class="txt">방금 실행한 것이 실패했어요. 원인을 찾아서 고쳐 주세요.</span><span class="tag">복사</span></button>
+          <p class="what">되돌리고 싶을 때는 <b>"방금 한 것 되돌려 주세요"</b>.
+          권한 모드를 바꾸려면 <b>Cmd/Ctrl + Shift + M</b>입니다.</p>
+        </div>
+      </li>
+    </ol>
+    </div>
   </div>
 </section>
 
@@ -816,7 +1022,7 @@
         <div class="where cc">Claude Code</div>
         <div>
           <button class="cmd" type="button"><span class="txt">/plugin marketplace add epoko77-ai/im-not-ai</span><span class="tag">복사</span></button>
-          <p class="what">스킬 보관소를 등록합니다.</p>
+          <p class="what">스킬 보관소를 등록합니다. 데스크탑 앱이라면 <b>+ 버튼 → Plugins → Add plugin</b>으로 명령 없이 골라 깔 수도 있습니다.</p>
         </div>
       </li>
       <li>
@@ -1392,4 +1598,35 @@ bash scripts/verify.sh full     <span class="c"># 퍼즐 완성 시 — 데스�
       setTimeout(() => { delete btn.dataset.copied; tag.textContent = "복사"; }, 1500);
     });
   }
+</script>
+
+<script>
+  (() => {
+    const tabs = [...document.querySelectorAll(".tab")];
+    if (!tabs.length) return;
+    const KEY = "escape-kit:howto-tab";
+    const show = (id, focus) => {
+      for (const t of tabs) {
+        const on = t.id === id;
+        t.setAttribute("aria-selected", String(on));
+        t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+        if (on && focus) t.focus();
+      }
+      // 다시 열었을 때 고른 쪽으로. 저장이 막힌 브라우저에서도 페이지는 멀쩡해야 한다.
+      try { localStorage.setItem(KEY, id); } catch {}
+    };
+    for (const [i, t] of tabs.entries()) {
+      t.addEventListener("click", () => show(t.id));
+      t.addEventListener("keydown", (e) => {
+        const d = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+        if (!d) return;
+        e.preventDefault();
+        show(tabs[(i + d + tabs.length) % tabs.length].id, true);
+      });
+    }
+    let saved = null;
+    try { saved = localStorage.getItem(KEY); } catch {}
+    if (saved && tabs.some((t) => t.id === saved)) show(saved);
+  })();
 </script>
