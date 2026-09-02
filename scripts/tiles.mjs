@@ -20,8 +20,16 @@ const PORT = Number(process.env.PORT) || 5373;
 const URL = `http://localhost:${PORT}/tools/tiles.html`;
 const WANT_OPEN = process.argv.slice(2).some((a) => a === "--open" || a === "-o");
 
-// 터미널이 아니면 escape 코드를 빼둔다 — 로그로 리다이렉트했을 때 읽을 수 있어야 한다.
-const c = (code) => (s) => (process.stdout.isTTY ? `\x1b[${code}m${s}\x1b[0m` : s);
+// 색 판정은 vite가 쓰는 picocolors와 같은 규칙 — NO_COLOR는 끄고 CI는 켠다.
+const COLOR =
+  !process.env.NO_COLOR &&
+  Boolean(
+    process.env.FORCE_COLOR ||
+      process.platform === "win32" ||
+      (process.stdout.isTTY && process.env.TERM !== "dumb") ||
+      process.env.CI,
+  );
+const c = (code) => (s) => (COLOR ? `\x1b[${code}m${s}\x1b[0m` : s);
 const B = c(1), DIM = c(2), OK = c(32), NO = c(33);
 
 // 방 목록은 src/maps/에서 읽는다 — check-reach·check-layout과 같은 규칙이다.

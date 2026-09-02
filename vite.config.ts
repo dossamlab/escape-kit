@@ -17,10 +17,20 @@ function announceGridTool(): Plugin {
     apply: "serve",
     configureServer(server) {
       const printUrls = server.printUrls.bind(server);
-      // 색은 vite 자신과 같은 규칙으로 — 터미널이 아니면 escape 코드를 넣지 않는다.
-      // (파일로 리다이렉트한 로그에 vite 줄만 깨끗하고 이 줄만 깨져 보이면 안 된다)
-      const tty = process.stdout.isTTY === true;
-      const c = (code: string, s: string) => (tty ? `\x1b[${code}m${s}\x1b[0m` : s);
+      // 색 판정은 vite가 쓰는 picocolors와 **같은 규칙**이어야 한다. isTTY만 보면
+      // CI(비-TTY지만 picocolors는 색을 켠다)와 NO_COLOR(TTY지만 끈다)에서 vite 줄과
+      // 이 줄의 색이 엇갈린다. picocolors를 직접 import하지는 않는다 — vite의 전이
+      // 의존성이라 호이스팅에 기대게 되고, 못 찾으면 개발 서버가 아예 안 뜬다.
+      const env = process.env;
+      const color =
+        !env.NO_COLOR &&
+        Boolean(
+          env.FORCE_COLOR ||
+            process.platform === "win32" ||
+            (process.stdout.isTTY && env.TERM !== "dumb") ||
+            env.CI,
+        );
+      const c = (code: string, s: string) => (color ? `\x1b[${code}m${s}\x1b[0m` : s);
       server.printUrls = () => {
         printUrls();
         const base = server.resolvedUrls?.local?.[0]?.replace(/\/$/, "");

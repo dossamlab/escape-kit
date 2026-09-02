@@ -16,7 +16,7 @@
 | `npm run story` | docs/story.md → src/data/story-data.ts 재생성 |
 | `npm run assets` | assets-src/ SVG → public/assets/ PNG (토큰 치환 포함) |
 | `npm run tiles` | 그리드 창(tools/tiles.html) 주소 + 열기 전 조건 검사 — 좌표는 여기서 찍는다 |
-| `npm run tiles:open` | 위 + 브라우저까지 띄운다 (`tiles -- --open`) |
+| `npm run tiles:open` | 위 + 브라우저까지 띄운다 — **사람용**. 에이전트는 쓰지 말 것 |
 | `npm run test:e2e` | Playwright 전체 (desktop-chrome + mobile) |
 | `npm run reach` | 스폰에서 모든 오브젝트에 걸어서 닿는지 검산 (`blocks`를 건드렸으면 필수) |
 | `npm run layout` | 오브젝트 간격·근접 판정 검산 |
@@ -60,7 +60,8 @@ npx playwright test tests/e2e/search.spec.ts --project=desktop-chrome --retries=
 화면에서 픽셀을 눈으로 읽으면 틀린다 — 실측으로 45px(≈0.85타일) 어긋났다. 믿을 수
 있는 것은 **같은 그림 위에 찍은 점끼리의 상대 비교**와 **사용자가 직접 찍은 좌표**뿐이다.
 
-- 걷기 금지 칸·핫스팟은 `tools/tiles.html`에서 칠한다(`npm run tiles`가 주소를 찍는다)
+- 걷기 금지 칸·핫스팟은 `tools/tiles.html`에서 칠한다(`npm run tiles`가 주소를 찍는다 —
+  서버가 꺼져 있다고 나오면 `npm run dev`가 아니라 preview_start로 띄운 뒤 그 포트로 연다)
   → `scripts/blocks-from-mark.mjs`가 사각형으로 묶는다
 - 배치가 맞았는지는 `scripts/annotate-room.mjs`로 그림 위에 얹어 확인한다
 - `blocks`를 늘렸으면 **반드시** `npm run reach` — 구역이 통째로 막혀도 타입 검사·e2e에는 안 잡힌다
