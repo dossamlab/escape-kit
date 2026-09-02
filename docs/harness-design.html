@@ -426,6 +426,34 @@
   .takeaways b { display: block; margin-bottom: 3px; }
   .takeaways span.body { color: var(--ink-dim); }
 
+  /* ── 제작 표시 ─────────────────────────────────────── */
+  .brand {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 0 0 26px;
+    padding: 7px 14px 7px 13px;
+    border: 1px solid color-mix(in srgb, var(--signal) 45%, transparent);
+    border-left: 3px solid var(--signal);
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--signal) 9%, transparent);
+  }
+  .brand b { font-size: 15px; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
+  .brand span {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+  }
+  .credit {
+    margin: 18px 0 0;
+    padding-top: 16px;
+    border-top: 1px solid var(--rule-soft);
+    color: var(--ink-dim);
+  }
+  .credit b { color: var(--ink); }
+
   footer {
     border-top: 1px solid var(--rule);
     padding: 44px 0 72px;
@@ -448,6 +476,7 @@
 <header class="sheet">
   <div class="frame sheet-inner">
     <p class="eyebrow">기초 설계 · escape-kit</p>
+    <p class="brand"><b>도름스 도쌤</b> <span>제작 키트</span></p>
     <h1>성취기준으로 잠긴 방을 만드는 하네스</h1>
     <p class="lede">
       교육용 방탈출 게임 엔진의 파일 구성과, <b>왜 그렇게 잘랐는지</b>에 대한 기록.
@@ -935,6 +964,10 @@
       </p>
       <p style="margin:0;">
         코드 MIT · 콘텐츠 CC BY-NC-SA 4.0
+      </p>
+      <p class="credit">
+        <b>도름스 도쌤</b>이 만든 교과 방탈출 저작 키트입니다.
+        교실에서 자유롭게 쓰고 고쳐 쓰되, 다시 배포할 때는 이 제작 표시를 남겨 주세요.
       </p>
     </div>
   </div>

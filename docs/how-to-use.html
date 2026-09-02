@@ -795,6 +795,68 @@
 <section>
   <div class="frame">
     <div class="prose">
+      <p class="eyebrow">곁들이면 좋은 것</p>
+      <h2>대사가 "만든 티"가 날 때 — 한글 윤문 스킬</h2>
+      <p>
+        이 키트에서 학생이 읽는 글은 전부 <code>docs/story.md</code>에 있습니다. 대사, 연구노트,
+        수색했을 때 나오는 문장. <b>AI가 쓴 한국어는 밋밋해지기 쉽습니다</b> — 학생은 이유를 대지
+        못하면서도 "기계가 쓴 것 같다"고 느낍니다.
+      </p>
+      <p>
+        <a href="https://github.com/epoko77-ai/im-not-ai">im-not-ai</a>의
+        <b>humanize-korean</b> 스킬이 그걸 잡아 줍니다. 번역투·기계적 병렬·접속사 남발 등
+        10개 갈래 70여 개 패턴을 찾아 <b>내용은 그대로 두고 문체만</b> 고쳐 씁니다.
+        키트에 넣지 않았으니, 필요한 분만 두 줄로 깔면 됩니다.
+      </p>
+    </div>
+
+    <ol class="script">
+      <li>
+        <div class="no"></div>
+        <div class="where cc">Claude Code</div>
+        <div>
+          <button class="cmd" type="button"><span class="txt">/plugin marketplace add epoko77-ai/im-not-ai</span><span class="tag">복사</span></button>
+          <p class="what">스킬 보관소를 등록합니다.</p>
+        </div>
+      </li>
+      <li>
+        <div class="no"></div>
+        <div class="where cc">Claude Code</div>
+        <div>
+          <button class="cmd" type="button"><span class="txt">/plugin install humanize-korean@im-not-ai</span><span class="tag">복사</span></button>
+          <p class="what">설치합니다. <b>다음 세션부터</b> 쓸 수 있습니다.</p>
+        </div>
+      </li>
+      <li>
+        <div class="no"></div>
+        <div class="where cc">Claude Code</div>
+        <div>
+          <button class="cmd say" type="button"><span class="txt">docs/story.md의 대사를 AI 티 안 나게 다듬어 주세요. 내용은 바꾸지 말고요.</span><span class="tag">복사</span></button>
+          <p class="what">다듬은 뒤에는 <code>npm run story</code>를 한 번 치고, 게임에서 대사를 눈으로 확인하세요.</p>
+        </div>
+      </li>
+    </ol>
+
+    <div class="traps" style="margin-top: 26px;">
+      <div class="trap">
+        <h3>앵커는 건드리지 않게 하세요</h3>
+        <p><code>### #앵커</code> 줄은 코드가 대사를 찾는 이름표입니다. <b>인용 줄(<code>&gt;</code>)만 다듬으라고</b> 일러 주세요. 오타가 나면 <code>npm run anchors</code>가 잡습니다.</p>
+      </div>
+      <div class="trap">
+        <h3>퍼즐 답이 든 문장은 빼세요</h3>
+        <p>정답을 가리키는 넛지 문장은 <b>단어 하나가 곧 단서</b>입니다. 문체를 고치다 단서가 흐려지면 학생이 풀 수 없습니다.</p>
+      </div>
+      <div class="trap">
+        <h3>키트에는 안 들어 있습니다</h3>
+        <p>따로 만든 도구라 <b>설치한 사람만</b> 쓸 수 있고, 갱신도 그쪽을 따라갑니다. 이 키트는 여전히 Node.js 하나만 있으면 됩니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="frame">
+    <div class="prose">
       <p class="eyebrow">한 눈에</p>
       <h2>다섯 단계, 그리고 하나의 반복</h2>
       <p>
