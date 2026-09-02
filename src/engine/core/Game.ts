@@ -544,22 +544,37 @@ export class Game {
     const sy = ky + jy;
     this.moving = sx !== 0 || sy !== 0;
     if (this.moving) {
+      const margin = 0.4;
+      /** 한 프레임 이동. 축 분리 + 통행 불가(blocks) 판정 — 막힌 축만 취소해
+       *  벽면을 따라 미끄러진다. 실제로 움직였는지 돌려준다. */
+      const step = (wx: number, wy: number): boolean => {
+        const x0 = this.player.x;
+        const y0 = this.player.y;
+        const nx = Math.min(
+          this.map.cols - 1 - margin,
+          Math.max(margin, x0 + wx * PLAYER_SPEED * dt),
+        );
+        const ny = Math.min(
+          this.map.rows - 1 - margin,
+          Math.max(margin, y0 + wy * PLAYER_SPEED * dt),
+        );
+        if (!this.isBlocked(nx, this.player.y)) this.player.x = nx;
+        if (!this.isBlocked(this.player.x, ny)) this.player.y = ny;
+        return this.player.x !== x0 || this.player.y !== y0;
+      };
+
       // 방향키는 8칸으로 스냅해 **대각이 방의 축을 따르게** 하고(iso.ts 주석),
       // 조이스틱은 연속 방향 그대로 — 스틱은 26.57°든 뭐든 겨눈 대로 간다.
-      const [wx, wy] =
-        kx !== 0 || ky !== 0 ? keyDirToWorld(kx, ky) : screenDirToWorld(jx, jy);
-      const margin = 0.4;
-      // 축 분리 이동 + 통행 불가(blocks) 판정 — 막힌 축만 취소해 벽면을 따라 미끄러진다
-      const nx = Math.min(
-        this.map.cols - 1 - margin,
-        Math.max(margin, this.player.x + wx * PLAYER_SPEED * dt),
-      );
-      const ny = Math.min(
-        this.map.rows - 1 - margin,
-        Math.max(margin, this.player.y + wy * PLAYER_SPEED * dt),
-      );
-      if (!this.isBlocked(nx, this.player.y)) this.player.x = nx;
-      if (!this.isBlocked(this.player.x, ny)) this.player.y = ny;
+      const byKeys = kx !== 0 || ky !== 0;
+      const [wx, wy] = byKeys ? keyDirToWorld(kx, ky) : screenDirToWorld(jx, jy);
+      if (!step(wx, wy) && byKeys) {
+        // 스냅한 방향이 **완전히** 막혔다. 스냅 결과는 월드 축 하나(예: [0,1])라
+        // 미끄러질 다른 축이 없어 장애물 모서리에 붙어 멈춘다 — 방향키만 쥔 사람은
+        // 영영 못 지나간다(지오폰 랙에서 실측, e2e search.spec.ts).
+        // 이럴 때만 조이스틱과 같은 연속 방향으로 되돌아간다. 두 축이 다 살아 있어
+        // 막힌 축만 취소되고 나머지 축으로 모서리를 돌아 나간다.
+        step(...screenDirToWorld(kx, ky));
+      }
       this.walkPhase += dt * 7; // 걷기 프레임 속도 (초당 약 3.5회 교대)
       // 화면 이동 방향을 45°씩 8칸으로 나눈다 (화면 y는 아래가 +).
       // 위·아래 키가 정면/후면(n·s)을, 대각이 ¾ 뷰(ne·nw·se·sw)를 고른다.
